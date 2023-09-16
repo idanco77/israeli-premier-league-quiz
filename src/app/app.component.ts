@@ -320,10 +320,10 @@ export class AppComponent implements OnInit {
   }
 
   private getData() {
-    if (localStorage.getItem('availableWords') && localStorage.getItem('details')) {
+    if (localStorage.getItem('availableWords') && localStorage.getItem('details') && localStorage.getItem('autocompleteAvailableWords')) {
       this.availableWords = JSON.parse(localStorage.getItem('availableWords') || '[]');
       this.details = JSON.parse(localStorage.getItem('details') || '[]');
-      this.autocompleteAvailableWords = [... this.availableWords];
+      this.autocompleteAvailableWords = JSON.parse(localStorage.getItem('autocompleteAvailableWords') || '[]');
 
       this.setWinningWord();
       return;
@@ -360,6 +360,7 @@ export class AppComponent implements OnInit {
 
       localStorage.setItem('details', JSON.stringify(this.details));
       localStorage.setItem('availableWords', JSON.stringify(this.availableWords));
+      localStorage.setItem('autocompleteAvailableWords', JSON.stringify(this.autocompleteAvailableWords));
 
       this.setWinningWord();
     });
