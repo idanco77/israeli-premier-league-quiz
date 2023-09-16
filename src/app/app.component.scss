@@ -1,0 +1,65 @@
+.quiz {
+  display: flex;
+  justify-content: center;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  border: 1px solid #d3d6da;
+  margin: 3px;
+  font-weight: 550;
+  font-size: 35px;
+}
+
+@keyframes flip {
+  0% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.keyboard {
+  display: flex;
+  justify-content: center;
+}
+
+.key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+  background-color: #D3D6DA;
+  margin: 3px;
+  font-size: 25px;
+}
+
+.green {
+  background-color: #2f872a;
+  color: white;
+  animation: flip 550ms ease forwards;
+}
+
+.yellow {
+  background-color: #a39308;
+  color: white;
+  animation: flip 550ms ease forwards;
+}
+
+.gray {
+  background-color: #777c7f;
+  color: white;
+  animation: flip 550ms ease forwards;
+}
