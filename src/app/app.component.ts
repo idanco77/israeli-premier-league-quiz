@@ -323,7 +323,7 @@ export class AppComponent implements OnInit {
     if (localStorage.getItem('availableWords') && localStorage.getItem('details')) {
       this.availableWords = JSON.parse(localStorage.getItem('availableWords') || '[]');
       this.details = JSON.parse(localStorage.getItem('details') || '[]');
-      this.autocompleteAvailableWords = [... this.availableWords];;
+      this.autocompleteAvailableWords = [... this.availableWords];
 
       this.setWinningWord();
       return;
@@ -336,6 +336,7 @@ export class AppComponent implements OnInit {
           return {
             name: player.hebrewName,
             lastName: this.removeTerminalLetter(player.lastName),
+            lastNameTerminalLetters: player.lastName,
             position: player.hebrewPosition,
             age: player.dateOfBirth?.sec ? this.getAge(new Date(player.dateOfBirth?.sec * 1000)) : '',
             shirtNumber: player.shirtNumber,
@@ -350,7 +351,12 @@ export class AppComponent implements OnInit {
         .filter((lastName, index, currentVal) => currentVal.indexOf(lastName) === index)
         .filter(lastName => lastName?.length === 5)
         .filter(lastName => !/[A-Z][a-z]/.test(lastName));
-      this.autocompleteAvailableWords = [... this.availableWords];
+      this.autocompleteAvailableWords = [... this.details]
+        .map((player: any) => player.lastNameTerminalLetters)
+        // filter duplicated last names
+        .filter((lastName, index, currentVal) => currentVal.indexOf(lastName) === index)
+        .filter(lastName => lastName?.length === 5)
+        .filter(lastName => !/[A-Z][a-z]/.test(lastName));
 
       localStorage.setItem('details', JSON.stringify(this.details));
       localStorage.setItem('availableWords', JSON.stringify(this.availableWords));
