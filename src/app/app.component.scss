@@ -1,9 +1,19 @@
+@import '../scss/abstracts/mixin';
+@import '../scss/abstracts/variables';
+
 .header {
   display: flex;
   align-items: center;
-  border-bottom: 0.1rem solid black;
+  border-bottom: 0.1rem solid $black;
   height: 5rem;
   padding: 0 2rem;
+
+  @include respond(phone) {
+    flex-direction: column;
+    height: 7rem;
+    text-align: center;
+    justify-content: center;
+  }
 }
 
 .header-title {
@@ -29,26 +39,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 70px;
-  height: 70px;
-  border: 0.1rem solid #d3d6da;
+  width: 7rem;
+  height: 7rem;
+  border: 0.1rem solid $light-gray;
   margin: 0.3rem;
   font-weight: 550;
   font-size: 3.5rem;
-}
-
-@keyframes flip {
-  0% {
-    transform: scaleY(1);
-  }
-
-  50% {
-    transform: scaleY(0);
-  }
-
-  100% {
-    transform: scaleY(1);
-  }
 }
 
 .keyboard {
@@ -63,33 +59,25 @@
   width: 7rem;
   height: 7rem;
   cursor: pointer;
-  background-color: #D3D6DA;
+  background-color: $light-gray;
   margin: 0.3rem;
   font-size: 2.5rem;
 }
 
 .green {
-  background-color: #2f872a;
-  color: white;
+  background-color: $dark-green;
+  color: $white;
   animation: flip 550ms ease forwards;
 }
 
 .yellow {
-  background-color: #a39308;
-  color: white;
+  background-color: $dark-yellow;
+  color: $white;
   animation: flip 550ms ease forwards;
 }
 
 .gray {
-  background-color: #777c7f;
-  color: white;
+  background-color: $dark-gray;
+  color: $white;
   animation: flip 550ms ease forwards;
-}
-
-@media only screen and (max-width:481px)  {
-  .header {
-    flex-direction: column;
-    height: 10rem;
-    text-align: center;
-  }
 }

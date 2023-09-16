@@ -67,7 +67,6 @@ export class AppComponent implements OnInit {
       return;
     }
     this.currentLetter++;
-
     if (this.currentLetter === 4 && this.terminalLetters.includes(utf16code)) {
       utf16code = utf16code - 1;
     }
@@ -143,7 +142,6 @@ export class AppComponent implements OnInit {
     });
     this.currentGuess++;
     this.currentLetter = -1;
-    console.log(guessLetters);
     guessLetters.forEach(letter => {
       if (this.terminalLetters.includes(letter.charCodeAt(0) + 1)) {
         letter = String.fromCharCode(letter.charCodeAt(0) + 1);

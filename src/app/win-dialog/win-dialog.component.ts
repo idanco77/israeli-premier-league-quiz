@@ -4,7 +4,7 @@ import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
 
 @Component({
   templateUrl: './win-dialog.component.html',
-  styles: [`.logo-image {width: 200px;}`]
+  styleUrls: ['./win-dialog.component.scss']
 })
 export class WinDialogComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public playerDetail: PlayerDetail) {
