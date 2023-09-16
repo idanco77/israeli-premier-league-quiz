@@ -1,3 +1,15 @@
+.header {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid black;
+  height: 50px;
+  padding: 0 20px;
+}
+
+.w-33 {
+  width: 33.3%;
+}
+
 .quiz {
   display: flex;
   justify-content: center;

@@ -32,7 +32,8 @@ export class AppComponent implements OnInit {
   terminalLetters: number[] = [1499, 1502, 1504, 1508, 1510];
 
   constructor(private apiService: ApiService, private snackBar: MatSnackBar,
-              private dialog: MatDialog) {
+              private dialog: MatDialog,) {
+
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -142,6 +143,7 @@ export class AppComponent implements OnInit {
     });
     this.currentGuess++;
     this.currentLetter = -1;
+    console.log(guessLetters);
     guessLetters.forEach(letter => {
       if (this.terminalLetters.includes(letter.charCodeAt(0) + 1)) {
         letter = String.fromCharCode(letter.charCodeAt(0) + 1);

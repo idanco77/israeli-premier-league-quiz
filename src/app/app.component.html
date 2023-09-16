@@ -1,7 +1,10 @@
-<form class="mt-4 me-5">
-  <mat-slide-toggle [formControl]="difficultyControl">רמה קלה</mat-slide-toggle>
-</form>
-<div class="container mt-1">
+<div class="header">
+  <form class="w-33">
+    <mat-slide-toggle [formControl]="difficultyControl">רמה קלה</mat-slide-toggle>
+  </form>
+  <h1 class="text-center m-0 w-33">וורדעל כדורגלני ליגת העל</h1>
+</div>
+<div class="container mt-3">
   <div class="quiz" *ngFor="let word of [0, 1, 2, 3, 4, 5]">
     <div class="cell" *ngFor="let letter of [0, 1, 2, 3, 4]"
          [ngClass]="{

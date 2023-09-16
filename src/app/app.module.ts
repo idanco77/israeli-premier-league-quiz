@@ -12,12 +12,11 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {WinDialogComponent} from 'src/app/win-dialog/win-dialog.component';
 import {MatDialogModule} from '@angular/material/dialog';
-import { initializeApp,provideFirebaseApp } from '@angular/fire/app';
-import { provideAnalytics,getAnalytics,ScreenTrackingService,UserTrackingService } from '@angular/fire/analytics';
-import { provideDatabase,getDatabase } from '@angular/fire/database';
-import {AngularFireAnalyticsModule} from '@angular/fire/compat/analytics';
-import {AngularFireModule} from '@angular/fire/compat';
+import { ScreenTrackingService,UserTrackingService } from '@angular/fire/analytics';
+import * as firebase from 'firebase/app';
 import {environment} from 'src/environment/environment';
+
+firebase.initializeApp(environment.firebase);
 
 @NgModule({
   declarations: [
@@ -34,9 +33,6 @@ import {environment} from 'src/environment/environment';
     MatSlideToggleModule,
     MatSnackBarModule,
     MatDialogModule,
-    AngularFireModule.initializeApp(environment.firebase),
-    AngularFireAnalyticsModule
-
   ],
   providers: [
     ApiService,
