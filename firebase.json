@@ -1,18 +1,25 @@
 {
-  "hosting": {
-    "public": "dist/israeli-premier-league-quizz",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  },
+  "hosting": [
+    {
+      "public": "dist/israeli-premier-league-quizz",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "israeli-premier-league-quizz",
+      "source": ".",
+      "frameworksBackend": {}
+    }
+  ],
   "database": {
     "rules": "database.rules.json"
   }
