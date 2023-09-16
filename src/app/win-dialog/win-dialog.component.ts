@@ -6,12 +6,7 @@ import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
   templateUrl: './win-dialog.component.html',
   styles: [`.logo-image {width: 200px;}`]
 })
-export class WinDialogComponent implements OnInit {
+export class WinDialogComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public playerDetail: PlayerDetail) {
   }
-
-  ngOnInit() {
-    console.log(this.playerDetail);
-  }
-
 }
