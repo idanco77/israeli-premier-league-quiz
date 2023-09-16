@@ -1,13 +1,23 @@
 .header {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid black;
-  height: 50px;
-  padding: 0 20px;
+  border-bottom: 0.1rem solid black;
+  height: 5rem;
+  padding: 0 2rem;
+}
+
+.header-title {
+  text-align: center;
+  margin: 0;
+  font-size: 2.5rem;
+}
+
+.difficulty-level {
+  font-size: 1.6rem;
 }
 
 .w-33 {
-  width: 33.3%;
+  min-width: 33.3%;
 }
 
 .quiz {
@@ -19,12 +29,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 70px;
-  height: 70px;
-  border: 1px solid #d3d6da;
-  margin: 3px;
+  width: 7rem;
+  height: 7rem;
+  border: 0.1rem solid #d3d6da;
+  margin: 0.3rem;
   font-weight: 550;
-  font-size: 35px;
+  font-size: 3.5rem;
 }
 
 @keyframes flip {
@@ -50,12 +60,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 70px;
-  height: 70px;
+  width: 7rem;
+  height: 7rem;
   cursor: pointer;
   background-color: #D3D6DA;
-  margin: 3px;
-  font-size: 25px;
+  margin: 0.3rem;
+  font-size: 2.5rem;
 }
 
 .green {
@@ -74,4 +84,12 @@
   background-color: #777c7f;
   color: white;
   animation: flip 550ms ease forwards;
+}
+
+@media only screen and (max-width:481px)  {
+  .header {
+    flex-direction: column;
+    height: 10rem;
+    text-align: center;
+  }
 }

@@ -7,8 +7,25 @@
   box-sizing: inherit;
 }
 
-html, body {
+/* smartphones, iPhone, portrait 480x320 phones */
+@media only screen and (min-width:80px)  {
+  html {
+    font-size: 37.5%; // 6px
+  }
+}
 
+/* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */
+@media only screen and (min-width:481px)  {
+  html {
+    font-size: 50%; // 8px
+  }
+}
+
+/* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */
+@media only screen and (min-width:641px)  {
+  html {
+    font-size: 62.5%; // 10px
+  }
 }
 
 body {
