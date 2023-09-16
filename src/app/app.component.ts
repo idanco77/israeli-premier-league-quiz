@@ -82,6 +82,10 @@ export class AppComponent implements OnInit {
       return;
     }
     const guessLetters: string[] = guess.map((letterData: Guess) => letterData.letter);
+    if (this.terminalLetters.includes(guessLetters[4].charCodeAt(0) + 1)) {
+      guessLetters[4] = String.fromCharCode(guessLetters[4].charCodeAt(0) + 1);
+    }
+
     if (! this.availableWords.includes(guessLetters.join(''))) {
       this.snackBar.open('השחקן לא נמצא ברשימת השחקנים', 'X', {
         duration: 1000,
@@ -89,6 +93,7 @@ export class AppComponent implements OnInit {
       })
       return;
     }
+
     const orderedByLettersResults: ('isGray' | 'isYellow' | 'isGreen') [] = [];
     // loop over the guess:
     for (let guessLetterIndex = 0; guessLetterIndex < guess.length; guessLetterIndex++) {
@@ -100,7 +105,7 @@ export class AppComponent implements OnInit {
       }
 
       // check is yellow:
-      if (!this.winningWord.includes(guess[guessLetterIndex].letter)) {
+      if (!this.winningWord.includes(guessLetters[guessLetterIndex])) {
         orderedByLettersResults.push('isGray');
         continue;
       }
@@ -115,14 +120,14 @@ export class AppComponent implements OnInit {
       }
 
       // get the index of the answer letter
-      const ind = this.winningWord.indexOf(guess[guessLetterIndex].letter);
+      const ind = this.winningWord.indexOf(guessLetters[guessLetterIndex]);
 
       /*
        answer: revivo. guess: rrxxxx:
        don't mark the second r as yellow because
        the first r already marked as green
      */
-      if (guess[ind].letter === this.winningWord[ind]) {
+      if (guessLetters[ind] === this.winningWord[ind]) {
         orderedByLettersResults.push('isGray');
         continue;
       }
@@ -130,7 +135,6 @@ export class AppComponent implements OnInit {
       this.winningWord[ind] = '';
       orderedByLettersResults.push('isYellow');
     }
-    console.log(orderedByLettersResults);
     orderedByLettersResults.forEach((color, index) => {
       setTimeout(() => {
         guess[index][color] = true;
@@ -144,7 +148,6 @@ export class AppComponent implements OnInit {
       }
       this.pressedLetters.push(letter);
     });
-
     if (orderedByLettersResults.every(color => color === 'isGreen')) {
       this.isWin = true;
       const playerDetails = this.details.find((playerDetail: PlayerDetail) => playerDetail.lastName === this.cachedWinningWord.join(''));
@@ -332,7 +335,7 @@ export class AppComponent implements OnInit {
         .map((player: any) => {
           return {
             name: player.hebrewName,
-            lastName: player.lastName,
+            lastName: this.removeTerminalLetter(player.lastName),
             position: player.hebrewPosition,
             age: player.dateOfBirth?.sec ? this.getAge(new Date(player.dateOfBirth?.sec * 1000)) : '',
             shirtNumber: player.shirtNumber,
@@ -341,7 +344,6 @@ export class AppComponent implements OnInit {
             coachName: player.teamId.hebrewCoachName
           }
         });
-
       this.availableWords = [... this.details]
         .map((player: any) => player.lastName)
         // filter duplicated last names
@@ -372,7 +374,6 @@ export class AppComponent implements OnInit {
       [Math.floor(Math.random() * this.availableWords.length)]
       .split('');
     this.cachedWinningWord = [...this.winningWord];
-    console.log(this.winningWord);
   }
 
   handleSelection(selectedPlayer: MatAutocompleteSelectedEvent) {
@@ -381,5 +382,20 @@ export class AppComponent implements OnInit {
     selectedPlayerArray.forEach(letter => this.press(letter.charCodeAt(0)));
     this.checkWord();
     this.autocompleteControl.reset();
+  }
+
+  private removeTerminalLetter(name: string): string {
+    let nameArray = name.split('');
+    let lastLetter = nameArray[4];
+    if (! lastLetter) {
+      return '';
+    }
+    const isTerminalLetter = this.terminalLetters.includes(lastLetter.charCodeAt(0) + 1);
+    if (isTerminalLetter) {
+      // convert to regular letter:
+      lastLetter = String.fromCharCode(lastLetter.charCodeAt(0) + 1);
+      nameArray[4] = lastLetter;
+    }
+    return nameArray.join('');
   }
 }
