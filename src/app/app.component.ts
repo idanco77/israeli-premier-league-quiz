@@ -28,8 +28,10 @@ export class AppComponent implements OnInit {
   isBeginner = false;
   details: PlayerDetail[] = [];
   isWin: boolean = false;
-  pressedLetters: string[] = [];
   terminalLetters: number[] = [1499, 1502, 1504, 1508, 1510];
+  middleRowKeyboardKey: Guess[] = [];
+  firstRowKeyboardKey: Guess[] = [];
+  lastRowKeyboardKey: Guess[] = [];
 
   constructor(private apiService: ApiService, private snackBar: MatSnackBar,
               private dialog: MatDialog) {}
@@ -42,10 +44,9 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.initKeyboardLetter();
     this.handleAutocomplete();
-    this.difficultyControl.valueChanges.subscribe(val => {
-      this.isBeginner = !!val;
-    })
+    this.handleDifficultyControl();
     this.initGuesses();
     this.getData();
   }
@@ -64,6 +65,10 @@ export class AppComponent implements OnInit {
     }
 
     this.guesses[this.currentGuess][this.currentLetter].letter = String.fromCharCode(utf16code);
+    this.guesses[this.currentGuess][this.currentLetter].regularLetter = String.fromCharCode(utf16code);
+    if (this.terminalLetters.includes(utf16code + 1)) {
+      this.guesses[this.currentGuess][this.currentLetter].regularLetter = String.fromCharCode(utf16code + 1);
+    }
   }
 
   checkWord() {
@@ -126,20 +131,23 @@ export class AppComponent implements OnInit {
 
       this.winningWord[ind] = '';
       orderedByLettersResults.push('isYellow');
+
+      console.log(guess[guessLetterIndex]);
     }
     orderedByLettersResults.forEach((color, index) => {
       setTimeout(() => {
         guess[index][color] = true;
-      }, index * 500);
+        const middleRowKey = this.middleRowKeyboardKey.find(key => key.letter === guess[index].regularLetter);
+        this.addColor(middleRowKey, color);
+        const firstRowKey = this.firstRowKeyboardKey.find(key => key.letter === guess[index].regularLetter);
+        this.addColor(firstRowKey, color);
+        const lastRowKey = this.lastRowKeyboardKey.find(key => key.letter === guess[index].regularLetter);
+        this.addColor(lastRowKey, color);
+      }, index * 500)
     });
     this.currentGuess++;
     this.currentLetter = -1;
-    guessLetters.forEach(letter => {
-      if (this.terminalLetters.includes(letter.charCodeAt(0) + 1)) {
-        letter = String.fromCharCode(letter.charCodeAt(0) + 1);
-      }
-      this.pressedLetters.push(letter);
-    });
+
     if (orderedByLettersResults.every(color => color === 'isGreen')) {
       this.isWin = true;
       const playerDetails = this.details.find((playerDetail: PlayerDetail) => playerDetail.lastName === this.cachedWinningWord.join(''));
@@ -413,5 +421,61 @@ export class AppComponent implements OnInit {
       startWith(''),
       map(value => this.autocompleteAvailableWords.filter(option => option.includes(value || ''))),
     );
+  }
+
+  private handleDifficultyControl() {
+    this.difficultyControl.valueChanges.subscribe(val => {
+      this.isBeginner = !!val;
+    })
+  }
+
+  private initKeyboardLetter() {
+    ['פ','ו','ט','א','ר','ק'].forEach(letter => {
+      this.firstRowKeyboardKey.push({
+        letter: letter, isGray: false, isYellow: false, isGreen: false
+      })
+    });
+
+    ['ל','ח','י','ע','כ','ג','ד','ש'].forEach(letter => {
+      this.middleRowKeyboardKey.push({
+        letter: letter, isGray: false, isYellow: false, isGreen: false
+      })
+    });
+
+    ['ת','צ','מ','נ','ה','ב','ס','ז'].forEach(letter => {
+      this.lastRowKeyboardKey.push({
+        letter: letter, isGray: false, isYellow: false, isGreen: false
+      })
+    });
+    console.log(this.firstRowKeyboardKey);
+  }
+
+  private addColor(key: Guess | undefined, color: 'isGray' | 'isYellow' | 'isGreen') {
+    if (key) {
+      if (color === 'isGreen') {
+        key['isGreen'] = true;
+        key['isYellow'] = false;
+        key['isGray'] = false;
+        return;
+      }
+      if (color === 'isYellow' && ! key.isGreen) {
+        key['isYellow'] = true;
+        key['isGray'] = false;
+        key['isGreen'] = false;
+        return;
+      }
+      if (color === 'isGray' && ! key.isGreen && ! key.isYellow) {
+        key['isGray'] = true;
+        key['isYellow'] = false;
+        key['isGreen'] = false;
+      }
+    }
+  }
+
+  private getTerminalLetter(letter: string): string {
+    if (this.terminalLetters.includes(letter.charCodeAt(0))) {
+      return String.fromCharCode(letter.charCodeAt(0) - 1);
+    }
+    return letter;
   }
 }

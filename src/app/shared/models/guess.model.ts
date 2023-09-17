@@ -3,4 +3,5 @@ export interface Guess {
   isYellow: boolean;
   isGray: boolean;
   letter: string;
+  regularLetter?: string;
 }
