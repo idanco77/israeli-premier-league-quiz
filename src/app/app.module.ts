@@ -21,7 +21,7 @@ firebase.initializeApp(environment.firebase);
 @NgModule({
   declarations: [
     AppComponent,
-    WinDialogComponent,
+    WinDialogComponent
   ],
   imports: [
     BrowserModule,

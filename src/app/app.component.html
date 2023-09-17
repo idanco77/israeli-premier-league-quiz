@@ -45,7 +45,7 @@
     </mat-form-field>
   </form>
 
-  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="handleSelection($event)">
+  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="handleSelection($event.option.value.split(''))">
     <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
       {{option}}
     </mat-option>

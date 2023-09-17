@@ -1,13 +1,13 @@
-import {Component, HostListener, OnInit} from '@angular/core';
+import {Component, HostListener, OnInit, ViewChild} from '@angular/core';
 import {Guess} from 'src/app/shared/models/guess.model';
 import {ApiService} from 'src/app/shared/services/api.service';
-import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {FormControl} from '@angular/forms';
 import {map, Observable, startWith} from 'rxjs';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatDialog} from '@angular/material/dialog';
 import {WinDialogComponent} from 'src/app/win-dialog/win-dialog.component';
 import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
+import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
 
 @Component({
   selector: 'app-root',
@@ -32,30 +32,22 @@ export class AppComponent implements OnInit {
   terminalLetters: number[] = [1499, 1502, 1504, 1508, 1510];
 
   constructor(private apiService: ApiService, private snackBar: MatSnackBar,
-              private dialog: MatDialog,) {
+              private dialog: MatDialog) {}
 
-  }
+  @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger | undefined;
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    if (this.isBeginner) {return;}
     this.handlePress(event.key);
   }
 
   ngOnInit() {
-    this.filteredOptions = this.autocompleteControl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filter(value || '')),
-    );
+    this.handleAutocomplete();
     this.difficultyControl.valueChanges.subscribe(val => {
       this.isBeginner = !!val;
     })
     this.initGuesses();
     this.getData();
-  }
-
-  private _filter(value: string): string[] {
-    return this.autocompleteAvailableWords.filter(option => option.includes(value));
   }
 
   press(utf16code: number) {
@@ -169,6 +161,17 @@ export class AppComponent implements OnInit {
   }
 
   private handlePress(key: string) {
+    if (this.isBeginner) {
+      if (key === 'Enter') {
+        const filteredList = this.autocompleteAvailableWords.filter(option => option.includes(this.autocompleteControl.value || ''));
+        if (filteredList.length) {
+          this.handleSelection(filteredList[0].split(''));
+          this.autocomplete?.closePanel();
+        }
+      }
+      return;
+    }
+
     switch (key) {
       case 'Enter':
         this.checkWord();
@@ -383,8 +386,7 @@ export class AppComponent implements OnInit {
     this.cachedWinningWord = [...this.winningWord];
   }
 
-  handleSelection(selectedPlayer: MatAutocompleteSelectedEvent) {
-    const selectedPlayerArray: string[] = selectedPlayer.option.value.split('');
+  handleSelection(selectedPlayerArray: string[]) {
     this.currentLetter = -1;
     selectedPlayerArray.forEach(letter => this.press(letter.charCodeAt(0)));
     this.checkWord();
@@ -404,5 +406,12 @@ export class AppComponent implements OnInit {
       nameArray[4] = lastLetter;
     }
     return nameArray.join('');
+  }
+
+  private handleAutocomplete() {
+    this.filteredOptions = this.autocompleteControl.valueChanges.pipe(
+      startWith(''),
+      map(value => this.autocompleteAvailableWords.filter(option => option.includes(value || ''))),
+    );
   }
 }
