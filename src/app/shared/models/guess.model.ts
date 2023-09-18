@@ -1,4 +1,4 @@
-export interface Guess {
+export interface Key {
   isGreen: boolean;
   isYellow: boolean;
   isGray: boolean;

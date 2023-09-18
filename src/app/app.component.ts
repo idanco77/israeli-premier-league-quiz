@@ -1,5 +1,5 @@
 import {Component, HostListener, OnInit, ViewChild} from '@angular/core';
-import {Guess} from 'src/app/shared/models/guess.model';
+import {Key} from 'src/app/shared/models/guess.model';
 import {ApiService} from 'src/app/shared/services/api.service';
 import {FormControl} from '@angular/forms';
 import {map, Observable, startWith} from 'rxjs';
@@ -8,6 +8,17 @@ import {MatDialog} from '@angular/material/dialog';
 import {WinDialogComponent} from 'src/app/win-dialog/win-dialog.component';
 import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
 import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
+import { FIRST_KEYBOARD_ROW, KEYBOARD, SECOND_KEYBOARD_ROW, THIRD_KEYBOARD_ROW} from 'src/app/shared/consts/KEYBOARD';
+import {Colors} from 'src/app/shared/types/colors.type';
+import {
+  FIRST_GUESS,
+  FIRST_LETTER,
+  LAST_LETTER,
+  MAX_GUESSES_ALLOWED, MAX_LETTERS_ALLOWED,
+  OPTIONAL_TERMINAL_LETTERS_CODES,
+  WORD_MAX_LENGTH
+} from 'src/app/shared/consts/rules';
+import {UTF_CONVERTER} from 'src/app/shared/consts/key-mapping';
 
 @Component({
   selector: 'app-root',
@@ -15,23 +26,25 @@ import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  currentLetter = -1;
-  currentGuess = 0;
-  guesses: any;
+  currentLetter: number = FIRST_LETTER;
+  currentGuess: number = FIRST_GUESS;
+  guesses: Key[][] = [];
   availableWords: string[] = [];
   winningWord: string[] = [];
   cachedWinningWord: string[] = [];
   autocompleteAvailableWords: string[] = [];
-  autocompleteControl = new FormControl('');
-  difficultyControl = new FormControl('');
+  autocompleteControl: FormControl<string | null> = new FormControl('');
+  userLevel: FormControl<string | null> = new FormControl('');
   filteredOptions: Observable<string[]> = new Observable<string[]>();
-  isBeginner = false;
+  isBeginner: boolean = false;
   details: PlayerDetail[] = [];
   isWin: boolean = false;
-  terminalLetters: number[] = [1499, 1502, 1504, 1508, 1510];
-  middleRowKeyboardKey: Guess[] = [];
-  firstRowKeyboardKey: Guess[] = [];
-  lastRowKeyboardKey: Guess[] = [];
+  keyboardKeys: Key[][] = [];
+  numberOfWords: number[] = Array.from(Array(MAX_GUESSES_ALLOWED).keys());
+  readonly numberOfLetters: number[] = Array.from(Array(MAX_LETTERS_ALLOWED).keys());
+  readonly FIRST_KEYBOARD_ROW = FIRST_KEYBOARD_ROW;
+  readonly SECOND_KEYBOARD_ROW = SECOND_KEYBOARD_ROW;
+  readonly THIRD_KEYBOARD_ROW = THIRD_KEYBOARD_ROW;
 
   constructor(private apiService: ApiService, private snackBar: MatSnackBar,
               private dialog: MatDialog) {}
@@ -39,299 +52,149 @@ export class AppComponent implements OnInit {
   @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger | undefined;
 
   @HostListener('document:keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
+  handleKeyboardEvent(event: KeyboardEvent): void {
     this.handlePress(event.key);
   }
 
-  ngOnInit() {
-    this.initKeyboardLetter();
+  ngOnInit(): void {
+    this.initKeyboardKeys();
     this.handleAutocomplete();
-    this.handleDifficultyControl();
+    this.checkUserLevelSelection();
     this.initGuesses();
-    this.getData();
+    this.getPlayersData();
   }
 
-  press(utf16code: number) {
+  press(utf16code: number): void {
     if (this.isWin) {
       return;
     }
 
-    if (this.currentLetter > 3) {
+    if (this.currentGuess >= MAX_GUESSES_ALLOWED) {
       return;
     }
-    this.currentLetter++;
-    if (this.currentLetter === 4 && this.terminalLetters.includes(utf16code)) {
-      utf16code = utf16code - 1;
+
+    if (this.currentLetter > WORD_MAX_LENGTH) {
+      return;
     }
 
-    this.guesses[this.currentGuess][this.currentLetter].letter = String.fromCharCode(utf16code);
     this.guesses[this.currentGuess][this.currentLetter].regularLetter = String.fromCharCode(utf16code);
-    if (this.terminalLetters.includes(utf16code + 1)) {
-      this.guesses[this.currentGuess][this.currentLetter].regularLetter = String.fromCharCode(utf16code + 1);
-    }
+    utf16code = this.convertRegularLetterToTerminal(utf16code);
+    this.guesses[this.currentGuess][this.currentLetter].letter = String.fromCharCode(utf16code);
+    this.currentLetter++;
   }
 
-  checkWord() {
-    this.winningWord = [... this.cachedWinningWord];
-    const guess: Guess[] = this.guesses[this.currentGuess];
-
-    if (!guess[4].letter) {
+  checkWord(): void {
+    if (this.currentGuess >= MAX_GUESSES_ALLOWED) {
       return;
     }
-    const guessLetters: string[] = guess.map((letterData: Guess) => letterData.letter);
-    if (this.terminalLetters.includes(guessLetters[4].charCodeAt(0) + 1)) {
-      guessLetters[4] = String.fromCharCode(guessLetters[4].charCodeAt(0) + 1);
+
+    const guess: Key[] = this.guesses[this.currentGuess];
+    if (!guess[LAST_LETTER].letter) {
+      return;
+    }
+
+    this.winningWord = [... this.cachedWinningWord];
+    const guessLetters: string[] = guess.map((letterData: Key) => letterData.letter);
+
+    if (OPTIONAL_TERMINAL_LETTERS_CODES.includes(guessLetters[LAST_LETTER].charCodeAt(0) + 1)) {
+      guessLetters[LAST_LETTER] = String.fromCharCode(
+          guessLetters[LAST_LETTER].charCodeAt(0) + 1
+      );
     }
 
     if (! this.availableWords.includes(guessLetters.join(''))) {
       this.snackBar.open('השחקן לא נמצא ברשימת השחקנים', 'X', {
         duration: 1000,
         verticalPosition: 'top'
-      })
+      });
       return;
     }
 
-    const orderedByLettersResults: ('isGray' | 'isYellow' | 'isGreen') [] = [];
+    const letterColors: Colors[] = [];
+
     // loop over the guess:
     for (let guessLetterIndex = 0; guessLetterIndex < guess.length; guessLetterIndex++) {
+
       // check is green:
       if (guessLetters[guessLetterIndex].charCodeAt(0) === this.winningWord[guessLetterIndex].charCodeAt(0)) {
-        orderedByLettersResults.push('isGreen');
+        letterColors.push('isGreen');
         this.winningWord[guessLetterIndex] = '';
         continue;
       }
 
-      // check is yellow:
+      // check is gray:
       if (!this.winningWord.includes(guessLetters[guessLetterIndex])) {
-        orderedByLettersResults.push('isGray');
+        letterColors.push('isGray');
         continue;
       }
 
-      /*
-      answer: revivo. guess: xevxxx:
-      don't mark the second v of answer as yellow because it is
-      already green:
-      */
+      // check is already green:
       if (guessLetters[guessLetterIndex].charCodeAt(0) === this.winningWord[guessLetterIndex].charCodeAt(0)) {
         continue;
       }
 
-      // get the index of the answer letter
-      const ind = this.winningWord.indexOf(guessLetters[guessLetterIndex]);
-
-      /*
-       answer: revivo. guess: rrxxxx:
-       don't mark the second r as yellow because
-       the first r already marked as green
-     */
-      if (guessLetters[ind] === this.winningWord[ind]) {
-        orderedByLettersResults.push('isGray');
+      // check is already green:
+      const winningWordIndex = this.winningWord.indexOf(guessLetters[guessLetterIndex]);
+      if (guessLetters[winningWordIndex] === this.winningWord[winningWordIndex]) {
+        letterColors.push('isGray');
         continue;
       }
 
-      this.winningWord[ind] = '';
-      orderedByLettersResults.push('isYellow');
-
-      console.log(guess[guessLetterIndex]);
+      this.winningWord[winningWordIndex] = '';
+      letterColors.push('isYellow');
     }
-    orderedByLettersResults.forEach((color, index) => {
-      setTimeout(() => {
-        guess[index][color] = true;
-        const middleRowKey = this.middleRowKeyboardKey.find(key => key.letter === guess[index].regularLetter);
-        this.addColor(middleRowKey, color);
-        const firstRowKey = this.firstRowKeyboardKey.find(key => key.letter === guess[index].regularLetter);
-        this.addColor(firstRowKey, color);
-        const lastRowKey = this.lastRowKeyboardKey.find(key => key.letter === guess[index].regularLetter);
-        this.addColor(lastRowKey, color);
-      }, index * 500)
+
+    letterColors.forEach((color: Colors, index: number): void => {
+      this.applyLettersColor(color, index, guess)
     });
     this.currentGuess++;
-    this.currentLetter = -1;
+    this.currentLetter = FIRST_LETTER;
 
-    if (orderedByLettersResults.every(color => color === 'isGreen')) {
-      this.isWin = true;
-      const playerDetails = this.details.find((playerDetail: PlayerDetail) => playerDetail.lastName === this.cachedWinningWord.join(''));
-      setTimeout(() => {
-        this.dialog.open(WinDialogComponent, {
-          data: playerDetails
-        });
-      }, 3000);
-    }
+    this.checkIsWin(letterColors);
   }
 
-  deleteLetter() {
-    if (this.currentLetter < 0) {
-      this.currentLetter = -1;
+  deleteLetter(): void {
+    if (this.currentGuess >= MAX_GUESSES_ALLOWED || this.isWin) {
       return;
     }
-    this.guesses[this.currentGuess][this.currentLetter].letter = '';
+
+    if (this.currentLetter <= FIRST_LETTER) {
+      this.currentLetter = FIRST_LETTER;
+      return;
+    }
     this.currentLetter--;
+    this.guesses[this.currentGuess][this.currentLetter].letter = '';
   }
 
-  private handlePress(key: string) {
+  private handlePress(key: string): void {
     if (this.isBeginner) {
-      if (key === 'Enter') {
-        const filteredList = this.autocompleteAvailableWords.filter(option => option.includes(this.autocompleteControl.value || ''));
-        if (filteredList.length) {
-          this.handleSelection(filteredList[0].split(''));
-          this.autocomplete?.closePanel();
-        }
-      }
+      this.closeAutocompleteOnEnter(key);
       return;
     }
 
-    switch (key) {
-      case 'Enter':
-        this.checkWord();
-        break;
-      case 'Backspace':
-      case 'Delete':
-        this.deleteLetter();
-        break;
-      case '\'':
-      case 'w':
-      case 'W':
-        this.press('\''.charCodeAt(0));
-        break;
-      case 'א':
-      case 'T':
-      case 't':
-        this.press('א'.charCodeAt(0));
-        break;
-      case 'ב':
-      case 'C':
-      case 'c':
-        this.press('ב'.charCodeAt(0));
-        break;
-      case 'ג':
-      case 'D':
-      case 'd':
-        this.press('ג'.charCodeAt(0));
-        break;
-      case 'ד':
-      case 'S':
-      case 's':
-        this.press('ד'.charCodeAt(0));
-        break;
-      case 'ה':
-      case 'V':
-      case 'v':
-        this.press('ה'.charCodeAt(0));
-        break;
-      case 'ו':
-      case 'u':
-      case 'U':
-        this.press('ו'.charCodeAt(0));
-        break;
-      case 'ז':
-      case 'Z':
-      case 'z':
-        this.press('ז'.charCodeAt(0));
-        break;
-      case 'ח':
-      case 'J':
-      case 'j':
-        this.press('ח'.charCodeAt(0));
-        break;
-      case 'ט':
-      case 'Y':
-      case 'y':
-        this.press('ט'.charCodeAt(0));
-        break;
-      case 'י':
-      case 'h':
-      case 'H':
-        this.press('י'.charCodeAt(0));
-        break;
-      case 'כ':
-      case 'F':
-      case 'f':
-      case 'ך':
-      case 'L':
-      case 'l':
-        this.press('כ'.charCodeAt(0));
-        break;
-      case 'ל':
-      case 'k':
-      case 'K':
-        this.press('ל'.charCodeAt(0));
-        break;
-      case 'מ':
-      case 'N':
-      case 'n':
-      case 'ם':
-      case 'O':
-      case 'o':
-        this.press('מ'.charCodeAt(0));
-        break;
-      case 'נ':
-      case 'b':
-      case 'B':
-      case 'ן':
-      case 'I':
-      case 'i':
-        this.press('נ'.charCodeAt(0));
-        break;
-      case 'ס':
-      case 'X':
-      case 'x':
-        this.press('ס'.charCodeAt(0));
-        break;
-      case 'ע':
-      case 'G':
-      case 'g':
-        this.press('ע'.charCodeAt(0));
-        break;
-      case 'פ':
-      case 'p':
-      case 'P':
-      case 'ף':
-      case ';':
-        this.press('פ'.charCodeAt(0));
-        break;
-      case 'צ':
-      case 'M':
-      case 'm':
-      case 'ץ':
-      case '.':
-        this.press('צ'.charCodeAt(0));
-        break;
-      case 'ק':
-      case 'E':
-      case 'e':
-        this.press('ק'.charCodeAt(0));
-        break;
-      case 'ר':
-      case 'r':
-      case 'R':
-        this.press('ר'.charCodeAt(0));
-        break;
-      case 'ש':
-      case 'a':
-      case 'A':
-        this.press('ש'.charCodeAt(0));
-        break;
-      case 'ת':
-      case ',':
-        this.press('ת'.charCodeAt(0));
-        break;
-      default:
-        break;
+    if (key === 'Enter') {
+      this.checkWord();
+    } else if (['Backspace', 'Delete'].includes(key)) {
+      this.deleteLetter();
+    } else {
+      this.press(UTF_CONVERTER[key]);
     }
   }
 
-  private initGuesses() {
-    this.guesses = [];
-    for (let i = 0; i <= 5; i++) {
-      this.guesses.push([]);
-      for (let j = 0; j <= 4; j++) {
-        this.guesses[i].push({isGreen: false, isYellow: false, isGray: false, letter: ''});
-      }
-    }
+  private initGuesses(): void {
+    this.guesses = Array.from({length: MAX_GUESSES_ALLOWED}, () =>
+        Array.from({length: MAX_LETTERS_ALLOWED}, () => ({
+          isGreen: false,
+          isYellow: false,
+          isGray: false,
+          letter: ''
+        })));
   }
 
-  private getData() {
-    if (localStorage.getItem('availableWords') && localStorage.getItem('details') && localStorage.getItem('autocompleteAvailableWords')) {
+  private getPlayersData(): void {
+    if (localStorage.getItem('availableWords') &&
+        localStorage.getItem('details') &&
+        localStorage.getItem('autocompleteAvailableWords')) {
       this.availableWords = JSON.parse(localStorage.getItem('availableWords') || '[]');
       this.details = JSON.parse(localStorage.getItem('details') || '[]');
       this.autocompleteAvailableWords = JSON.parse(localStorage.getItem('autocompleteAvailableWords') || '[]');
@@ -339,35 +202,19 @@ export class AppComponent implements OnInit {
       this.setWinningWord();
       return;
     }
-    this.apiService.getData().subscribe(response => {
+
+    this.apiService.getPlayersData().subscribe(response => {
       this.details = Object.values(response.data)
-        // filter only season 23/24 and israeli premier league players
-        .filter((player: any) => player.leagues.hasOwnProperty('23/24') && player.leagues['23/24'] === 902)
-        .map((player: any) => {
-          return {
-            name: player.hebrewName,
-            lastName: this.removeTerminalLetter(player.lastName),
-            lastNameTerminalLetters: player.lastName,
-            position: player.hebrewPosition,
-            age: player.dateOfBirth?.sec ? this.getAge(new Date(player.dateOfBirth?.sec * 1000)) : '',
-            shirtNumber: player.shirtNumber,
-            team: player.teamId.hebrewName,
-            teamLogo: player.teamId.logoUrl,
-            coachName: player.teamId.hebrewCoachName
-          }
-        });
-      this.availableWords = [... this.details]
-        .map((player: any) => player.lastName)
-        // filter duplicated last names
-        .filter((lastName, index, currentVal) => currentVal.indexOf(lastName) === index)
-        .filter(lastName => lastName?.length === 5)
-        .filter(lastName => !/[A-Z][a-z]/.test(lastName));
-      this.autocompleteAvailableWords = [... this.details]
-        .map((player: any) => player.lastNameTerminalLetters)
-        // filter duplicated last names
-        .filter((lastName, index, currentVal) => currentVal.indexOf(lastName) === index)
-        .filter(lastName => lastName?.length === 5)
-        .filter(lastName => !/[A-Z][a-z]/.test(lastName));
+          .filter((player: any, index: number, currentVal: any[]) =>
+              player.leagues.hasOwnProperty('23/24') &&
+              player.leagues['23/24'] === 902 &&
+              player.lastName?.length === MAX_LETTERS_ALLOWED &&
+              !/[A-Z][a-z]/.test(player.lastName)
+          )
+          .map((player: any) => this.createPlayerDetail(player));
+
+      this.availableWords = this.mapPlayerDetails([...this.details.map((player: PlayerDetail) => player.lastName)]);
+      this.autocompleteAvailableWords = this.mapPlayerDetails([...this.details.map((player: PlayerDetail) => player.lastNameTerminalLetters)]);
 
       localStorage.setItem('details', JSON.stringify(this.details));
       localStorage.setItem('availableWords', JSON.stringify(this.availableWords));
@@ -377,105 +224,167 @@ export class AppComponent implements OnInit {
     });
   }
 
-  getAge(birthdate: Date): any {
-    const today = new Date();
-    let age = today.getFullYear() - birthdate.getFullYear();
-    const m = today.getMonth() - birthdate.getMonth();
+  getAge(birthdate: Date): number {
+    const today: Date = new Date();
+    let age: number = today.getFullYear() - birthdate.getFullYear();
+    const m: number = today.getMonth() - birthdate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthdate.getDate())) {
       age--;
     }
     return age;
   }
 
-  private setWinningWord() {
-    this.winningWord = this.availableWords
-      [Math.floor(Math.random() * this.availableWords.length)]
-      .split('');
+  private setWinningWord(): void {
+    // Select a random winning word
+    const randomIndex: number = Math.floor(Math.random() * this.availableWords.length);
+    const selectedWord: string = this.availableWords[randomIndex];
+
+    // Split the winning word into an array and create a cached copy
+    this.winningWord = selectedWord.split('');
     this.cachedWinningWord = [...this.winningWord];
   }
 
-  handleSelection(selectedPlayerArray: string[]) {
-    this.currentLetter = -1;
+  handleSelection(selectedPlayerArray: string[]): void {
+    this.currentLetter = FIRST_LETTER;
     selectedPlayerArray.forEach(letter => this.press(letter.charCodeAt(0)));
     this.checkWord();
     this.autocompleteControl.reset();
   }
 
-  private removeTerminalLetter(name: string): string {
-    let nameArray = name.split('');
-    let lastLetter = nameArray[4];
+  private terminalToRegularWord(word: string): string {
+    let wordArray = word.split('');
+    let lastLetter = wordArray[LAST_LETTER];
     if (! lastLetter) {
       return '';
     }
-    const isTerminalLetter = this.terminalLetters.includes(lastLetter.charCodeAt(0) + 1);
+    const isTerminalLetter: boolean = OPTIONAL_TERMINAL_LETTERS_CODES.includes(lastLetter.charCodeAt(0) + 1);
     if (isTerminalLetter) {
       // convert to regular letter:
       lastLetter = String.fromCharCode(lastLetter.charCodeAt(0) + 1);
-      nameArray[4] = lastLetter;
+      wordArray[LAST_LETTER] = lastLetter;
     }
-    return nameArray.join('');
+    return wordArray.join('');
   }
 
-  private handleAutocomplete() {
+  private handleAutocomplete(): void {
     this.filteredOptions = this.autocompleteControl.valueChanges.pipe(
       startWith(''),
-      map(value => this.autocompleteAvailableWords.filter(option => option.includes(value || ''))),
+      map(value => this.autocompleteAvailableWords.filter(
+          option => option.includes(value || '')
+      )),
     );
+
   }
 
-  private handleDifficultyControl() {
-    this.difficultyControl.valueChanges.subscribe(val => {
+  private checkUserLevelSelection(): void {
+    this.userLevel.valueChanges.subscribe((val: string | null): void => {
       this.isBeginner = !!val;
     })
   }
 
-  private initKeyboardLetter() {
-    ['פ','ו','ט','א','ר','ק'].forEach(letter => {
-      this.firstRowKeyboardKey.push({
-        letter: letter, isGray: false, isYellow: false, isGreen: false
-      })
-    });
-
-    ['ל','ח','י','ע','כ','ג','ד','ש'].forEach(letter => {
-      this.middleRowKeyboardKey.push({
-        letter: letter, isGray: false, isYellow: false, isGreen: false
-      })
-    });
-
-    ['ת','צ','מ','נ','ה','ב','ס','ז'].forEach(letter => {
-      this.lastRowKeyboardKey.push({
-        letter: letter, isGray: false, isYellow: false, isGreen: false
-      })
-    });
-    console.log(this.firstRowKeyboardKey);
+  private initKeyboardKeys(): void {
+    this.keyboardKeys = KEYBOARD.map((keyboardRow: string[]) =>
+        keyboardRow.map((letter: string): Key => ({
+          letter,
+          isGray: false,
+          isYellow: false,
+          isGreen: false,
+        }))
+    );
   }
 
-  private addColor(key: Guess | undefined, color: 'isGray' | 'isYellow' | 'isGreen') {
-    if (key) {
-      if (color === 'isGreen') {
-        key['isGreen'] = true;
-        key['isYellow'] = false;
-        key['isGray'] = false;
-        return;
-      }
-      if (color === 'isYellow' && ! key.isGreen) {
-        key['isYellow'] = true;
-        key['isGray'] = false;
-        key['isGreen'] = false;
-        return;
-      }
-      if (color === 'isGray' && ! key.isGreen && ! key.isYellow) {
-        key['isGray'] = true;
-        key['isYellow'] = false;
-        key['isGreen'] = false;
-      }
+  private handleColors(key: Key | undefined, color: Colors): void {
+    if (!key) { return }
+    if (color === 'isGreen') {
+      key['isGreen'] = true;
+      key['isYellow'] = false;
+      key['isGray'] = false;
+      return;
+    }
+    if (color === 'isYellow' && ! key.isGreen) {
+      key['isYellow'] = true;
+      key['isGray'] = false;
+      return;
+    }
+    if (color === 'isGray' && ! key.isGreen && ! key.isYellow) {
+      key['isGray'] = true;
     }
   }
 
-  private getTerminalLetter(letter: string): string {
-    if (this.terminalLetters.includes(letter.charCodeAt(0))) {
-      return String.fromCharCode(letter.charCodeAt(0) - 1);
+  private mapPlayerDetails(inputArray: string[]): any {
+    return inputArray
+        .map((player: any) => player)
+        .filter((lastName, index: number, currentVal: any[]) =>
+            currentVal.indexOf(lastName) === index
+        );
+  }
+
+  createPlayerDetail(player: any): PlayerDetail {
+    const { dateOfBirth, teamId, hebrewName, hebrewPosition, shirtNumber, lastName } = player;
+    return {
+      age: dateOfBirth?.sec ? this.getAge(new Date(dateOfBirth.sec * 1000)) : null,
+      coachName: teamId.hebrewCoachName,
+      name: hebrewName,
+      position: hebrewPosition,
+      shirtNumber,
+      team: teamId.hebrewName,
+      teamLogo: teamId.logoUrl,
+      lastName: this.terminalToRegularWord(lastName),
+      lastNameTerminalLetters: lastName,
+    };
+  }
+
+  private convertRegularLetterToTerminal(utf16code: number): number {
+    const shouldConvertRegularToTerminal = this.currentLetter === LAST_LETTER &&
+        OPTIONAL_TERMINAL_LETTERS_CODES.includes(utf16code);
+
+    if (shouldConvertRegularToTerminal) {
+      this.guesses[this.currentGuess][this.currentLetter].regularLetter = String.fromCharCode(utf16code);
+      utf16code = utf16code - 1;
     }
-    return letter;
+
+    return utf16code;
+  }
+
+  private applyLettersColor(color: Colors, index: number, guess: Key[]): void {
+    setTimeout(() => {
+      guess[index][color] = true;
+
+      const letter = guess[index].regularLetter;
+      const rows: Key[][] = [
+        this.keyboardKeys[FIRST_KEYBOARD_ROW],
+        this.keyboardKeys[SECOND_KEYBOARD_ROW],
+        this.keyboardKeys[THIRD_KEYBOARD_ROW]
+      ];
+
+      rows.forEach((row: Key[]):void => {
+        const key: Key | undefined = row.find(key => key.letter === letter);
+        this.handleColors(key, color);
+      });
+    }, index * 500)
+  }
+
+  private checkIsWin(letterColors: Colors[]): void {
+    if (letterColors.every((color: Colors): boolean => color === 'isGreen')) {
+      this.isWin = true;
+      const playerDetails = this.details.find((playerDetail: PlayerDetail): boolean =>
+          playerDetail.lastName === this.cachedWinningWord.join('')
+      );
+      setTimeout(() => {
+        this.dialog.open(WinDialogComponent, {
+          data: playerDetails
+        });
+      }, 3000);
+    }
+  }
+
+  private closeAutocompleteOnEnter(key: string): void {
+    if (key === 'Enter' && this.autocomplete?.panelOpen) {
+      const filteredList = this.autocompleteAvailableWords.filter(option => option.includes(this.autocompleteControl.value || ''));
+      if (filteredList.length) {
+        this.handleSelection(filteredList[0].split(''));
+        this.autocomplete?.closePanel();
+      }
+    }
   }
 }

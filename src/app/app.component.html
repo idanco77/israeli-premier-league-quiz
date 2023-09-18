@@ -1,12 +1,14 @@
 <div class="header">
-  <form class="w-33">
-    <mat-slide-toggle class="difficulty-level" [formControl]="difficultyControl">{{ difficultyControl.value ? 'בטל ' : 'הפעל ' }}רמה קלה</mat-slide-toggle>
+  <form class="w-33" (keydown.enter)="$event.preventDefault()">
+    <mat-slide-toggle class="user-level" [formControl]="userLevel">{{ userLevel.value ? 'בטל ' : 'הפעל ' }}רמה קלה</mat-slide-toggle>
   </form>
   <h1 class="header-title w-33">וורדעל כדורגלני ליגת העל</h1>
 </div>
+
 <div class="container mt-3">
-  <div class="quiz" *ngFor="let word of [0, 1, 2, 3, 4, 5]">
-    <div class="cell" *ngFor="let letter of [0, 1, 2, 3, 4]"
+  <div class="quiz" *ngFor="let word of numberOfWords">
+
+    <div class="cell" *ngFor="let letter of numberOfLetters"
          [ngClass]="{
        green: guesses[word][letter].isGreen,
        yellow: guesses[word][letter].isYellow,
@@ -15,11 +17,12 @@
       {{ guesses[word][letter].letter }}
     </div>
   </div>
+
   <div class="mt-1" *ngIf="!isBeginner">
     <div class="keyboard">
       <div class="key" (click)="deleteLetter()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-delete"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
       </div>
-      <div class="key" *ngFor="let key of firstRowKeyboardKey"
+      <div class="key" *ngFor="let key of keyboardKeys[FIRST_KEYBOARD_ROW]"
            (click)="press(key.letter.charCodeAt(0))"
            [ngClass]="{
            gray: key.isGray,
@@ -28,7 +31,7 @@
            }">{{ key.letter }}</div>
     </div>
     <div class="keyboard">
-      <div class="key" *ngFor="let key of middleRowKeyboardKey"
+      <div class="key" *ngFor="let key of keyboardKeys[SECOND_KEYBOARD_ROW]"
            (click)="press(key.letter.charCodeAt(0))"
            [ngClass]="{
            gray: key.isGray,
@@ -39,7 +42,7 @@
 
     <div class="keyboard">
       <div class="key" (click)="checkWord()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16"> <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/> </svg></div>
-      <div class="key" *ngFor="let key of lastRowKeyboardKey"
+      <div class="key" *ngFor="let key of keyboardKeys[THIRD_KEYBOARD_ROW]"
            (click)="press(key.letter.charCodeAt(0))"
            [ngClass]="{
            gray: key.isGray,

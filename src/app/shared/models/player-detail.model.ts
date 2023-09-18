@@ -1,5 +1,5 @@
 export interface PlayerDetail {
-  age: number,
+  age: number | null,
   coachName: string,
   name: string,
   position: string,
@@ -7,4 +7,5 @@ export interface PlayerDetail {
   team: string,
   teamLogo: string,
   lastName: string
+  lastNameTerminalLetters: string
 }
