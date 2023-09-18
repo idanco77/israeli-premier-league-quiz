@@ -18,6 +18,8 @@ import {environment} from 'src/environment/environment';
 import {HeaderComponent} from 'src/app/header/header.component';
 import {UserLevelService} from 'src/app/shared/services/user-level.service';
 import {AutocompleteComponent} from 'src/app/autocomplete/autocomplete.component';
+import {AutocompleteService} from 'src/app/shared/services/autocomplete.service';
+import {PlayersDataService} from 'src/app/shared/services/players-data.service';
 
 firebase.initializeApp(environment.firebase);
 
@@ -40,10 +42,12 @@ firebase.initializeApp(environment.firebase);
     MatDialogModule,
   ],
   providers: [
+    UserTrackingService,
+    AutocompleteService,
+    PlayersDataService,
     ApiService,
     ScreenTrackingService,
     UserLevelService,
-    UserTrackingService
   ],
   bootstrap: [AppComponent]
 })

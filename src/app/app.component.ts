@@ -1,13 +1,10 @@
-import {Component, HostListener, OnInit, ViewChild} from '@angular/core';
+import {Component, HostListener, OnInit} from '@angular/core';
 import {Key} from 'src/app/shared/models/guess.model';
-import {ApiService} from 'src/app/shared/services/api.service';
-import {FormControl} from '@angular/forms';
-import {map, Observable, startWith} from 'rxjs';
+import {Subscription} from 'rxjs';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatDialog} from '@angular/material/dialog';
 import {WinDialogComponent} from 'src/app/win-dialog/win-dialog.component';
 import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
-import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
 import { FIRST_KEYBOARD_ROW, KEYBOARD, SECOND_KEYBOARD_ROW, THIRD_KEYBOARD_ROW} from 'src/app/shared/consts/KEYBOARD';
 import {Colors} from 'src/app/shared/types/colors.type';
 import {
@@ -19,6 +16,8 @@ import {
   WORD_MAX_LENGTH
 } from 'src/app/shared/consts/rules';
 import {UserLevelService} from 'src/app/shared/services/user-level.service';
+import {PlayersDataService} from 'src/app/shared/services/players-data.service';
+import {AutocompleteService} from 'src/app/shared/services/autocomplete.service';
 
 @Component({
   selector: 'app-root',
@@ -32,9 +31,9 @@ export class AppComponent implements OnInit {
   availableWords: string[] = [];
   winningWord: string[] = [];
   cachedWinningWord: string[] = [];
-  autocompleteAvailableWords: string[] = [];
-  autocompleteControl: FormControl<string | null> = new FormControl('');
-  filteredOptions: Observable<string[]> = new Observable<string[]>();
+  playerDetailsSub: Subscription;
+  availableWordsSub: Subscription;
+
   isBeginner: boolean = false;
   details: PlayerDetail[] = [];
   isWin: boolean = false;
@@ -44,11 +43,12 @@ export class AppComponent implements OnInit {
   readonly FIRST_KEYBOARD_ROW = FIRST_KEYBOARD_ROW;
   readonly SECOND_KEYBOARD_ROW = SECOND_KEYBOARD_ROW;
   readonly THIRD_KEYBOARD_ROW = THIRD_KEYBOARD_ROW;
+  isBeginnerSub: Subscription;
 
-  constructor(private apiService: ApiService, private snackBar: MatSnackBar,
-              private dialog: MatDialog, private userLevelService: UserLevelService) {}
-
-  @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger | undefined;
+  constructor(private snackBar: MatSnackBar,
+              private dialog: MatDialog, private userLevelService: UserLevelService,
+              private playersDataService: PlayersDataService,
+              private autocompleteService: AutocompleteService) {}
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): void {
@@ -56,11 +56,14 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.playersDataService.setPlayersData();
     this.initKeyboardKeys();
-    this.handleAutocomplete();
     this.checkUserLevelSelection();
     this.initGuesses();
     this.getPlayersData();
+    this.autocompleteService.autocompleteOutput.subscribe((autocompleteValue: string[]) => {
+      this.handleSelection(autocompleteValue);
+    })
   }
 
   press(utf16code: number): void {
@@ -167,7 +170,6 @@ export class AppComponent implements OnInit {
 
   private handlePress(key: string): void {
     if (this.isBeginner) {
-      this.closeAutocompleteOnEnter(key);
       return;
     }
     this.mapKey(key)
@@ -184,46 +186,14 @@ export class AppComponent implements OnInit {
   }
 
   private getPlayersData(): void {
-    if (localStorage.getItem('availableWords') &&
-        localStorage.getItem('details') &&
-        localStorage.getItem('autocompleteAvailableWords')) {
-      this.availableWords = JSON.parse(localStorage.getItem('availableWords') || '[]');
-      this.details = JSON.parse(localStorage.getItem('details') || '[]');
-      this.autocompleteAvailableWords = JSON.parse(localStorage.getItem('autocompleteAvailableWords') || '[]');
-
-      this.setWinningWord();
-      return;
-    }
-
-    this.apiService.getPlayersData().subscribe(response => {
-      this.details = Object.values(response.data)
-          .filter((player: any, index: number, currentVal: any[]) =>
-              player.leagues.hasOwnProperty('23/24') &&
-              player.leagues['23/24'] === 902 &&
-              player.lastName?.length === MAX_LETTERS_ALLOWED &&
-              !/[A-Z][a-z]/.test(player.lastName)
-          )
-          .map((player: any) => this.createPlayerDetail(player));
-
-      this.availableWords = this.mapPlayerDetails([...this.details.map((player: PlayerDetail) => player.lastName)]);
-      this.autocompleteAvailableWords = this.mapPlayerDetails([...this.details.map((player: PlayerDetail) => player.lastNameTerminalLetters)]);
-
-      localStorage.setItem('details', JSON.stringify(this.details));
-      localStorage.setItem('availableWords', JSON.stringify(this.availableWords));
-      localStorage.setItem('autocompleteAvailableWords', JSON.stringify(this.autocompleteAvailableWords));
-
+    this.playerDetailsSub = this.playersDataService.playerDetailsSub.subscribe((playerDetails: PlayerDetail[]) => {
+      this.details = playerDetails;
+    });
+    this.availableWordsSub = this.playersDataService.availableWordsSub.subscribe((availableWords: string[]) => {
+      this.availableWords = availableWords;
       this.setWinningWord();
     });
-  }
 
-  getAge(birthdate: Date): number {
-    const today: Date = new Date();
-    let age: number = today.getFullYear() - birthdate.getFullYear();
-    const m: number = today.getMonth() - birthdate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthdate.getDate())) {
-      age--;
-    }
-    return age;
   }
 
   private setWinningWord(): void {
@@ -240,36 +210,10 @@ export class AppComponent implements OnInit {
     this.currentLetter = FIRST_LETTER;
     selectedPlayerArray.forEach(letter => this.press(letter.charCodeAt(0)));
     this.checkWord();
-    this.autocompleteControl.reset();
-  }
-
-  private terminalToRegularWord(word: string): string {
-    let wordArray = word.split('');
-    let lastLetter = wordArray[LAST_LETTER];
-    if (! lastLetter) {
-      return '';
-    }
-    const isTerminalLetter: boolean = OPTIONAL_TERMINAL_LETTERS_CODES.includes(lastLetter.charCodeAt(0) + 1);
-    if (isTerminalLetter) {
-      // convert to regular letter:
-      lastLetter = String.fromCharCode(lastLetter.charCodeAt(0) + 1);
-      wordArray[LAST_LETTER] = lastLetter;
-    }
-    return wordArray.join('');
-  }
-
-  private handleAutocomplete(): void {
-    this.filteredOptions = this.autocompleteControl.valueChanges.pipe(
-      startWith(''),
-      map(value => this.autocompleteAvailableWords.filter(
-          option => option.includes(value || '')
-      )),
-    );
-
   }
 
   private checkUserLevelSelection(): void {
-    this.userLevelService.isBeginner.subscribe((isBeginner: boolean): void => {
+    this.isBeginnerSub = this.userLevelService.isBeginner.subscribe((isBeginner: boolean): void => {
       this.isBeginner = isBeginner;
     })
   }
@@ -303,28 +247,6 @@ export class AppComponent implements OnInit {
     }
   }
 
-  private mapPlayerDetails(inputArray: string[]): any {
-    return inputArray
-        .map((player: any) => player)
-        .filter((lastName, index: number, currentVal: any[]) =>
-            currentVal.indexOf(lastName) === index
-        );
-  }
-
-  createPlayerDetail(player: any): PlayerDetail {
-    const { dateOfBirth, teamId, hebrewName, hebrewPosition, shirtNumber, lastName } = player;
-    return {
-      age: dateOfBirth?.sec ? this.getAge(new Date(dateOfBirth.sec * 1000)) : null,
-      coachName: teamId.hebrewCoachName,
-      name: hebrewName,
-      position: hebrewPosition,
-      shirtNumber,
-      team: teamId.hebrewName,
-      teamLogo: teamId.logoUrl,
-      lastName: this.terminalToRegularWord(lastName),
-      lastNameTerminalLetters: lastName,
-    };
-  }
 
   private convertRegularLetterToTerminal(utf16code: number): number {
     const shouldConvertRegularToTerminal = this.currentLetter === LAST_LETTER &&
@@ -367,16 +289,6 @@ export class AppComponent implements OnInit {
           data: playerDetails
         });
       }, 3000);
-    }
-  }
-
-  private closeAutocompleteOnEnter(key: string): void {
-    if (key === 'Enter' && this.autocomplete?.panelOpen) {
-      const filteredList = this.autocompleteAvailableWords.filter(option => option.includes(this.autocompleteControl.value || ''));
-      if (filteredList.length) {
-        this.handleSelection(filteredList[0].split(''));
-        this.autocomplete?.closePanel();
-      }
     }
   }
 
@@ -519,5 +431,11 @@ export class AppComponent implements OnInit {
       default:
         break;
     }
+  }
+
+  ngOnDestroy() {
+    this.isBeginnerSub.unsubscribe();
+    this.playerDetailsSub.unsubscribe();
+    this.availableWordsSub.unsubscribe();
   }
 }

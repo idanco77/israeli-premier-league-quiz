@@ -1,0 +1,13 @@
+<form (keydown.enter)="$event.preventDefault()" class="mt-1 d-flex justify-content-center">
+    <mat-form-field class="example-full-width" *ngIf="isBeginner">
+        <mat-label>שם השחקן</mat-label>
+        <input matInput placeholder="בחר שחקן" aria-label="Number"
+               [matAutocomplete]="auto" [formControl]="autocompleteControl">
+    </mat-form-field>
+</form>
+
+<mat-autocomplete #auto="matAutocomplete" (optionSelected)="handleSelection($event.option.value.split(''))">
+    <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+        {{option}}
+    </mat-option>
+</mat-autocomplete>
