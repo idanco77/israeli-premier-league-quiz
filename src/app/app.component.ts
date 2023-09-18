@@ -17,7 +17,7 @@ export class AppComponent implements OnInit {
       title: '<strong>ברוכים הבאים!</strong>',
       icon: 'info',
       html:
-          'יש לגלות שם משפחה של שחקן מליגת העל שמכיל בדיוק 5 אותיות' +
+          'יש לגלות שם משפחה של שחקן כדורגל מליגת העל שמכיל בדיוק 5 אותיות.' +
           ' עונת 2023-2024 ',
       showCloseButton: true,
       focusConfirm: false,
