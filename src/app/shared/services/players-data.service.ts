@@ -1,51 +1,41 @@
 import {Injectable} from '@angular/core';
-import {Subject} from 'rxjs';
+import { Subject} from 'rxjs';
 import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
-import {LAST_LETTER, MAX_LETTERS_ALLOWED, OPTIONAL_TERMINAL_LETTERS_CODES} from 'src/app/shared/consts/rules';
-import {mapPlayerDetails} from 'src/app/shared/services/helper.service';
-import {ApiService} from 'src/app/shared/services/api.service';
+import {LAST_LETTER, OPTIONAL_TERMINAL_LETTERS_CODES} from 'src/app/shared/consts/rules';
+import * as playersDetailsJSON from 'src/assets/players-details.json';
+
 
 @Injectable({
     providedIn: 'root'
 })
 export class PlayersDataService {
-    playerDetailsSub = new Subject<PlayerDetail[]>();
-    availableWordsSub = new Subject<string[]>();
     autocompleteAvailableWordsSub = new Subject<string[]>();
 
-    constructor(private apiService: ApiService) {
-    }
+    getPlayersData(): PlayerDetail[] {
+        const playersDetails: PlayerDetail[] = [];
 
-    setPlayersData() {
-        if (localStorage.getItem('availableWords') &&
-            localStorage.getItem('details') &&
-            localStorage.getItem('autocompleteAvailableWords')) {
-            this.availableWordsSub.next(JSON.parse(localStorage.getItem('availableWords') || '[]'));
-            this.playerDetailsSub.next(JSON.parse(localStorage.getItem('details') || '[]'));
-            this.autocompleteAvailableWordsSub.next(JSON.parse(localStorage.getItem('autocompleteAvailableWords') || '[]'));
+        for (const prop in playersDetailsJSON) {
+            if (isNaN(Number(prop))) {
+                continue;
+            }
+            playersDetails.push(playersDetailsJSON[prop] as PlayerDetail)
         }
+        return playersDetails;
 
-        this.apiService.getPlayersData().subscribe(response => {
-            const playerDetails = Object.values(response.data)
-                .filter((player: any) =>
-                    player.leagues.hasOwnProperty('23/24') &&
-                    player.leagues['23/24'] === 902 &&
-                    player.lastName?.length === MAX_LETTERS_ALLOWED &&
-                    !/[A-Z][a-z]/.test(player.lastName)
-                )
-                .map((player: any) => this.createPlayerDetail(player));
+        /* API Call - original data. can update the json file if we want */
 
-            const availableWords = mapPlayerDetails([...playerDetails.map((player: PlayerDetail) => player.lastName)]);
-            const availableWordsAutocomplete = mapPlayerDetails([...playerDetails.map((player: PlayerDetail) => player.lastNameTerminalLetters)]);
-
-            this.playerDetailsSub.next(playerDetails);
-            this.availableWordsSub.next(availableWords);
-            this.autocompleteAvailableWordsSub.next(availableWordsAutocomplete);
-
-            localStorage.setItem('details', JSON.stringify(playerDetails));
-            localStorage.setItem('availableWords', JSON.stringify(availableWords));
-            localStorage.setItem('autocompleteAvailableWords', JSON.stringify(availableWordsAutocomplete));
-        })
+        // this.http.get('https://cdnapi.bamboo-video.com/api/football/player' +
+        //     '?format=json&iid=573881b7181f46ae4c8b4567&returnZeros=false' +
+        //     '&disableDefaultFilter=true&useCache=false&ts=28245347').subscribe(response => {
+        //     const playerDetails = Object.values(response.data)
+        //         .filter((player: any) =>
+        //             player.leagues.hasOwnProperty('23/24') &&
+        //             player.leagues['23/24'] === 902 &&
+        //             player.lastName?.length === MAX_LETTERS_ALLOWED &&
+        //             !/[A-Z][a-z]/.test(player.lastName)
+        //         )
+        //         .map((player: any) => this.createPlayerDetail(player));
+        // });
     }
 
     createPlayerDetail(player: any): PlayerDetail {
@@ -87,6 +77,4 @@ export class PlayersDataService {
         }
         return wordArray.join('');
     }
-
-
 }

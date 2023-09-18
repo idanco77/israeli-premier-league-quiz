@@ -5,6 +5,8 @@ import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
 import {FormControl} from '@angular/forms';
 import {PlayersDataService} from 'src/app/shared/services/players-data.service';
 import {AutocompleteService} from 'src/app/shared/services/autocomplete.service';
+import {mapPlayerDetails} from 'src/app/shared/consts/player-detail-mapper.const';
+import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
 
 @Component({
     selector: 'app-autocomplete',
@@ -15,8 +17,6 @@ export class AutocompleteComponent implements OnInit, OnDestroy {
     autocompleteControl: FormControl<string | null> = new FormControl('');
     filteredOptions: Observable<string[]> = new Observable<string[]>();
     autocompleteAvailableWords: string[];
-    autocompleteAvailableWordsSub: Subscription;
-
 
     @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger | undefined;
     @HostListener('document:keydown', ['$event'])
@@ -31,10 +31,12 @@ export class AutocompleteComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.autocompleteAvailableWordsSub = this.playersDataService.autocompleteAvailableWordsSub.subscribe((autocompleteWords: string[]) => {
-            this.autocompleteAvailableWords = autocompleteWords;
-            this.handleAutocomplete();
-        });
+        const playersDetails = this.playersDataService.getPlayersData();
+        this.autocompleteAvailableWords = mapPlayerDetails([
+            ...playersDetails.map((player: PlayerDetail) => player.lastNameTerminalLetters)]
+        );
+        this.handleAutocomplete();
+
         this.isBeginnerSub = this.userLevelService.isBeginner.subscribe((isBeginner: boolean) => {
             this.isBeginner = isBeginner;
         })
@@ -67,6 +69,5 @@ export class AutocompleteComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.isBeginnerSub.unsubscribe();
-        this.autocompleteAvailableWordsSub.unsubscribe();
     }
 }
