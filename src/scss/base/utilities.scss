@@ -1,3 +1,23 @@
+@import '../abstracts/variables';
+
 .w-33 {
   min-width: 33.3%;
+}
+
+.green {
+  background-color: $dark-green!important;
+  color: $white;
+  animation: flip 550ms ease forwards;
+}
+
+.yellow {
+  background-color: $dark-yellow!important;
+  color: $white;
+  animation: flip 550ms ease forwards;
+}
+
+.gray {
+  background-color: $dark-gray!important;
+  color: $white;
+  animation: flip 550ms ease forwards;
 }

@@ -20,6 +20,9 @@ import {UserLevelService} from 'src/app/shared/services/user-level.service';
 import {AutocompleteComponent} from 'src/app/autocomplete/autocomplete.component';
 import {AutocompleteService} from 'src/app/shared/services/autocomplete.service';
 import {PlayersDataService} from 'src/app/shared/services/players-data.service';
+import {QuizComponent} from 'src/app/quiz/quiz.component';
+import {GuessesService} from 'src/app/shared/services/guesses.service';
+import {KeyboardComponent} from 'src/app/keyboard/keyboard.component';
 
 firebase.initializeApp(environment.firebase);
 
@@ -28,7 +31,9 @@ firebase.initializeApp(environment.firebase);
     AppComponent,
     WinDialogComponent,
     HeaderComponent,
-    AutocompleteComponent
+    AutocompleteComponent,
+    QuizComponent,
+    KeyboardComponent
   ],
   imports: [
     BrowserModule,
@@ -48,6 +53,7 @@ firebase.initializeApp(environment.firebase);
     ApiService,
     ScreenTrackingService,
     UserLevelService,
+    GuessesService
   ],
   bootstrap: [AppComponent]
 })

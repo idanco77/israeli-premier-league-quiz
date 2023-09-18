@@ -62,6 +62,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy {
 
     handleSelection(selectedValue: string[]): void {
         this.autocompleteService.autocompleteOutput.next(selectedValue);
+        this.autocompleteControl.reset();
     }
 
     ngOnDestroy(): void {
