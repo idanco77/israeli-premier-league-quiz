@@ -1,3 +1,5 @@
+
+<!--app-header-->
 <div class="header">
   <form class="w-33" (keydown.enter)="$event.preventDefault()">
     <mat-slide-toggle class="user-level" [formControl]="userLevel">{{ userLevel.value ? 'בטל ' : 'הפעל ' }}רמה קלה</mat-slide-toggle>
@@ -6,6 +8,8 @@
 </div>
 
 <div class="container mt-3">
+
+<!--  app quiz-->
   <div class="quiz" *ngFor="let word of numberOfWords">
 
     <div class="cell" *ngFor="let letter of numberOfLetters"
@@ -18,6 +22,7 @@
     </div>
   </div>
 
+<!--  app-keyboard-->
   <div class="mt-1" *ngIf="!isBeginner">
     <div class="keyboard">
       <div class="key" (click)="deleteLetter()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-delete"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
@@ -52,6 +57,7 @@
     </div>
   </div>
 
+<!--  app-autocomplete-->
   <form (keydown.enter)="$event.preventDefault()" class="mt-1 d-flex justify-content-center">
     <mat-form-field class="example-full-width" *ngIf="isBeginner">
       <mat-label>שם השחקן</mat-label>

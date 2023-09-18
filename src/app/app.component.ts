@@ -18,7 +18,6 @@ import {
   OPTIONAL_TERMINAL_LETTERS_CODES,
   WORD_MAX_LENGTH
 } from 'src/app/shared/consts/rules';
-import {UTF_CONVERTER} from 'src/app/shared/consts/key-mapping';
 
 @Component({
   selector: 'app-root',
@@ -171,14 +170,7 @@ export class AppComponent implements OnInit {
       this.closeAutocompleteOnEnter(key);
       return;
     }
-
-    if (key === 'Enter') {
-      this.checkWord();
-    } else if (['Backspace', 'Delete'].includes(key)) {
-      this.deleteLetter();
-    } else {
-      this.press(UTF_CONVERTER[key]);
-    }
+    this.mapKey(key)
   }
 
   private initGuesses(): void {
@@ -385,6 +377,147 @@ export class AppComponent implements OnInit {
         this.handleSelection(filteredList[0].split(''));
         this.autocomplete?.closePanel();
       }
+    }
+  }
+
+  private mapKey(key: string): void {
+    switch (key) {
+      case 'Enter':
+        this.checkWord();
+        break;
+      case 'Backspace':
+      case 'Delete':
+        this.deleteLetter();
+        break;
+      case '\'':
+      case 'w':
+      case 'W':
+        this.press('\''.charCodeAt(0));
+        break;
+      case 'א':
+      case 'T':
+      case 't':
+        this.press('א'.charCodeAt(0));
+        break;
+      case 'ב':
+      case 'C':
+      case 'c':
+        this.press('ב'.charCodeAt(0));
+        break;
+      case 'ג':
+      case 'D':
+      case 'd':
+        this.press('ג'.charCodeAt(0));
+        break;
+      case 'ד':
+      case 'S':
+      case 's':
+        this.press('ד'.charCodeAt(0));
+        break;
+      case 'ה':
+      case 'V':
+      case 'v':
+        this.press('ה'.charCodeAt(0));
+        break;
+      case 'ו':
+      case 'u':
+      case 'U':
+        this.press('ו'.charCodeAt(0));
+        break;
+      case 'ז':
+      case 'Z':
+      case 'z':
+        this.press('ז'.charCodeAt(0));
+        break;
+      case 'ח':
+      case 'J':
+      case 'j':
+        this.press('ח'.charCodeAt(0));
+        break;
+      case 'ט':
+      case 'Y':
+      case 'y':
+        this.press('ט'.charCodeAt(0));
+        break;
+      case 'י':
+      case 'h':
+      case 'H':
+        this.press('י'.charCodeAt(0));
+        break;
+      case 'כ':
+      case 'F':
+      case 'f':
+      case 'ך':
+      case 'L':
+      case 'l':
+        this.press('כ'.charCodeAt(0));
+        break;
+      case 'ל':
+      case 'k':
+      case 'K':
+        this.press('ל'.charCodeAt(0));
+        break;
+      case 'מ':
+      case 'N':
+      case 'n':
+      case 'ם':
+      case 'O':
+      case 'o':
+        this.press('מ'.charCodeAt(0));
+        break;
+      case 'נ':
+      case 'b':
+      case 'B':
+      case 'ן':
+      case 'I':
+      case 'i':
+        this.press('נ'.charCodeAt(0));
+        break;
+      case 'ס':
+      case 'X':
+      case 'x':
+        this.press('ס'.charCodeAt(0));
+        break;
+      case 'ע':
+      case 'G':
+      case 'g':
+        this.press('ע'.charCodeAt(0));
+        break;
+      case 'פ':
+      case 'p':
+      case 'P':
+      case 'ף':
+      case ';':
+        this.press('פ'.charCodeAt(0));
+        break;
+      case 'צ':
+      case 'M':
+      case 'm':
+      case 'ץ':
+      case '.':
+        this.press('צ'.charCodeAt(0));
+        break;
+      case 'ק':
+      case 'E':
+      case 'e':
+        this.press('ק'.charCodeAt(0));
+        break;
+      case 'ר':
+      case 'r':
+      case 'R':
+        this.press('ר'.charCodeAt(0));
+        break;
+      case 'ש':
+      case 'a':
+      case 'A':
+        this.press('ש'.charCodeAt(0));
+        break;
+      case 'ת':
+      case ',':
+        this.press('ת'.charCodeAt(0));
+        break;
+      default:
+        break;
     }
   }
 }
