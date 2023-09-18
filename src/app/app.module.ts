@@ -9,7 +9,7 @@ import {MatInputModule} from '@angular/material/input';
 import {ReactiveFormsModule} from '@angular/forms';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
-import {WinDialogComponent} from 'src/app/win-dialog/win-dialog.component';
+import {ResultsDialogComponent} from 'src/app/results-dialog/results-dialog.component';
 import {MatDialogModule} from '@angular/material/dialog';
 import { ScreenTrackingService,UserTrackingService } from '@angular/fire/analytics';
 import * as firebase from 'firebase/app';
@@ -28,7 +28,7 @@ firebase.initializeApp(environment.firebase);
 @NgModule({
   declarations: [
     AppComponent,
-    WinDialogComponent,
+    ResultsDialogComponent,
     HeaderComponent,
     AutocompleteComponent,
     QuizComponent,

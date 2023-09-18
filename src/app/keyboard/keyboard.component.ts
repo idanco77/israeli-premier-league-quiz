@@ -20,7 +20,7 @@ import {Colors} from 'src/app/shared/types/colors.type';
 import {PlayersDataService} from 'src/app/shared/services/players-data.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
-import {WinDialogComponent} from 'src/app/win-dialog/win-dialog.component';
+import {ResultsDialogComponent} from 'src/app/results-dialog/results-dialog.component';
 import {AutocompleteService} from 'src/app/shared/services/autocomplete.service';
 import {MatDialog} from '@angular/material/dialog';
 import {keyMapper} from 'src/app/shared/consts/key-mapper.const';
@@ -257,14 +257,10 @@ export class KeyboardComponent implements OnInit, OnDestroy {
     private checkIsWin(letterColors: Colors[]): void {
         if (letterColors.every((color: Colors): boolean => color === 'isGreen')) {
             this.isWin = true;
-            const playerDetails = this.details.find((playerDetail: PlayerDetail): boolean =>
-                playerDetail.lastName === this.cachedWinningWord.join('')
-            );
-            setTimeout(() => {
-                this.dialog.open(WinDialogComponent, {
-                    data: playerDetails
-                });
-            }, 3000);
+            this.openResultsDialog('כל הכבוד! ניצחת!');
+        }
+        if (this.currentGuess === MAX_GUESSES_ALLOWED) {
+            this.openResultsDialog('לא הצלחת. לא נורא נסה פעם הבאה');
         }
     }
 
@@ -303,5 +299,17 @@ export class KeyboardComponent implements OnInit, OnDestroy {
         this.guessesSub.unsubscribe();
         this.isBeginnerSub.unsubscribe();
         this.autocompleteValueSub.unsubscribe();
+    }
+
+    private openResultsDialog(message: string) {
+        const playerDetails = this.details.find((playerDetail: PlayerDetail): boolean =>
+            playerDetail.lastName === this.cachedWinningWord.join('')
+        ) as PlayerDetail;
+        setTimeout(() => {
+            this.dialog.open(ResultsDialogComponent, {
+                data: {playerDetails, message: message}
+            });
+        }, 3000);
+
     }
 }
