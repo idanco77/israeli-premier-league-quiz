@@ -18,6 +18,7 @@ import {
   OPTIONAL_TERMINAL_LETTERS_CODES,
   WORD_MAX_LENGTH
 } from 'src/app/shared/consts/rules';
+import {UserLevelService} from 'src/app/shared/services/user-level.service';
 
 @Component({
   selector: 'app-root',
@@ -33,7 +34,6 @@ export class AppComponent implements OnInit {
   cachedWinningWord: string[] = [];
   autocompleteAvailableWords: string[] = [];
   autocompleteControl: FormControl<string | null> = new FormControl('');
-  userLevel: FormControl<string | null> = new FormControl('');
   filteredOptions: Observable<string[]> = new Observable<string[]>();
   isBeginner: boolean = false;
   details: PlayerDetail[] = [];
@@ -46,7 +46,7 @@ export class AppComponent implements OnInit {
   readonly THIRD_KEYBOARD_ROW = THIRD_KEYBOARD_ROW;
 
   constructor(private apiService: ApiService, private snackBar: MatSnackBar,
-              private dialog: MatDialog) {}
+              private dialog: MatDialog, private userLevelService: UserLevelService) {}
 
   @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger | undefined;
 
@@ -269,8 +269,8 @@ export class AppComponent implements OnInit {
   }
 
   private checkUserLevelSelection(): void {
-    this.userLevel.valueChanges.subscribe((val: string | null): void => {
-      this.isBeginner = !!val;
+    this.userLevelService.isBeginner.subscribe((isBeginner: boolean): void => {
+      this.isBeginner = isBeginner;
     })
   }
 

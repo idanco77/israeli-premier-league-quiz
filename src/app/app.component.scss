@@ -1,34 +1,6 @@
-@import '../scss/abstracts/mixin';
 @import '../scss/abstracts/variables';
-
-.header {
-  display: flex;
-  align-items: center;
-  border-bottom: 0.1rem solid $black;
-  height: 5rem;
-  padding: 0 2rem;
-
-  @include respond(phone) {
-    flex-direction: column;
-    height: 7rem;
-    text-align: center;
-    justify-content: center;
-  }
-}
-
-.header-title {
-  text-align: center;
-  margin: 0;
-  font-size: 2.5rem;
-}
-
-.user-level {
-  font-size: 1.6rem;
-}
-
-.w-33 {
-  min-width: 33.3%;
-}
+@import '../scss/abstracts/mixin';
+@import '../scss/base/utilities';
 
 .quiz {
   display: flex;

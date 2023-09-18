@@ -15,13 +15,18 @@ import {MatDialogModule} from '@angular/material/dialog';
 import { ScreenTrackingService,UserTrackingService } from '@angular/fire/analytics';
 import * as firebase from 'firebase/app';
 import {environment} from 'src/environment/environment';
+import {HeaderComponent} from 'src/app/header/header.component';
+import {UserLevelService} from 'src/app/shared/services/user-level.service';
+import {AutocompleteComponent} from 'src/app/autocomplete/autocomplete.component';
 
 firebase.initializeApp(environment.firebase);
 
 @NgModule({
   declarations: [
     AppComponent,
-    WinDialogComponent
+    WinDialogComponent,
+    HeaderComponent,
+    AutocompleteComponent
   ],
   imports: [
     BrowserModule,
@@ -36,7 +41,9 @@ firebase.initializeApp(environment.firebase);
   ],
   providers: [
     ApiService,
-    ScreenTrackingService,UserTrackingService
+    ScreenTrackingService,
+    UserLevelService,
+    UserTrackingService
   ],
   bootstrap: [AppComponent]
 })
