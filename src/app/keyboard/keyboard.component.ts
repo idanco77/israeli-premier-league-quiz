@@ -34,8 +34,8 @@ import {mapPlayerDetails} from 'src/app/shared/consts/player-detail-mapper.const
 })
 export class KeyboardComponent implements OnInit, OnDestroy {
     readonly firstKeyboardRow = FIRST_KEYBOARD_ROW;
-    readonly secondKeyboardRow = THIRD_KEYBOARD_ROW;
-    readonly thirdKeyboardRow = SECOND_KEYBOARD_ROW;
+    readonly secondKeyboardRow = SECOND_KEYBOARD_ROW;
+    readonly thirdKeyboardRow = THIRD_KEYBOARD_ROW;
     availableWords: string[] = [];
     isBeginner: boolean;
     isBeginnerSub: Subscription;
@@ -205,7 +205,7 @@ export class KeyboardComponent implements OnInit, OnDestroy {
         this.currentGuess++;
         this.currentLetter = FIRST_LETTER;
 
-        this.checkIsWin(letterColors);
+        this.checkResults(letterColors);
     }
 
     private setWinningWord(): void {
@@ -254,14 +254,15 @@ export class KeyboardComponent implements OnInit, OnDestroy {
         }
     }
 
-    private checkIsWin(letterColors: Colors[]): void {
-        if (letterColors.every((color: Colors): boolean => color === 'isGreen')) {
+    private checkResults(letterColors: Colors[]): void {
+        const isEveryColorGreen = letterColors.every((color: Colors): boolean => color === 'isGreen');
+        if (isEveryColorGreen) {
             this.isWin = true;
             this.openResultsDialog('כל הכבוד! ניצחת!');
-        }
-        if (this.currentGuess === MAX_GUESSES_ALLOWED) {
+        } else if (this.currentGuess === MAX_GUESSES_ALLOWED) {
             this.openResultsDialog('לא הצלחת. לא נורא נסה פעם הבאה');
         }
+
     }
 
     handleSelection(selectedPlayerArray: string[]): void {
