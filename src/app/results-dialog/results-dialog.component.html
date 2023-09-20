@@ -1,11 +1,11 @@
 <div mat-dialog-close class="m-3">X</div>
 <div class="px-5 d-flex justify-content-center flex-column align-items-center">
-  <h1 class="text-center mt-2 win-dialog-message">{{ data.message }}</h1>
-  <div class="win-dialog-details" *ngIf="data.playerDetails.name">שם השחקן: {{ data.playerDetails.name }}</div>
-  <div class="win-dialog-details mt-2" *ngIf="data.playerDetails.age">גיל השחקן: {{ data.playerDetails.age }}</div>
-  <div class="win-dialog-details mt-2" *ngIf="data.playerDetails.team">קבוצה: {{ data.playerDetails.team }}</div>
-  <div class="win-dialog-details mt-2" *ngIf="data.playerDetails.position">תפקיד: {{ data.playerDetails.position }}</div>
-  <div class="win-dialog-details mt-2" *ngIf="data.playerDetails.shirtNumber">מספר חולצה: {{ data.playerDetails.shirtNumber }}</div>
-  <div class="win-dialog-details mt-2" *ngIf="data.playerDetails.coachName">מאמן: {{ data.playerDetails.coachName }}</div>
+  <h1 class="text-center mt-2 result-dialog-message">{{ data.message }}</h1>
+  <div class="result-dialog-details" *ngIf="data.playerDetails.name">שם השחקן: {{ data.playerDetails.name }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.age">גיל השחקן: {{ data.playerDetails.age }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.team">קבוצה: {{ data.playerDetails.team }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.position">תפקיד: {{ data.playerDetails.position }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.shirtNumber">מספר חולצה: {{ data.playerDetails.shirtNumber }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.coachName">מאמן: {{ data.playerDetails.coachName }}</div>
   <img class="logo-image" *ngIf="data.playerDetails.teamLogo" [src]="data.playerDetails.teamLogo" [alt]="data.playerDetails.name">
 </div>

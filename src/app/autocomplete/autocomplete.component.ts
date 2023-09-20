@@ -10,8 +10,7 @@ import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
 
 @Component({
     selector: 'app-autocomplete',
-    templateUrl: './autocomplete.component.html',
-    styleUrls: ['./autocomplete.component.scss']
+    templateUrl: './autocomplete.component.html'
 })
 export class AutocompleteComponent implements OnInit, OnDestroy {
     autocompleteControl: FormControl<string | null> = new FormControl('');

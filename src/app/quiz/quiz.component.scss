@@ -3,16 +3,16 @@
 .quiz {
   display: flex;
   justify-content: center;
-}
 
-.cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 7rem;
-  height: 7rem;
-  border: 0.1rem solid $light-gray;
-  margin: 0.3rem;
-  font-weight: 550;
-  font-size: 3.5rem;
+  &__cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 7rem;
+    height: 7rem;
+    border: 0.1rem solid $light-gray;
+    margin: 0.3rem;
+    font-weight: 550;
+    font-size: 3.5rem;
+  }
 }

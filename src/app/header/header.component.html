@@ -1,6 +1,6 @@
 <div class="header">
     <form class="w-33" (keydown.enter)="$event.preventDefault()">
-        <mat-slide-toggle class="user-level" [formControl]="userLevel">{{ userLevel.value ? 'בטל ' : 'הפעל ' }}רמה קלה</mat-slide-toggle>
+        <mat-slide-toggle class="header__user-level" [formControl]="userLevel">{{ userLevel.value ? 'בטל ' : 'הפעל ' }}רמה קלה</mat-slide-toggle>
     </form>
-    <h1 class="header-title w-33">וורדעל כדורגלני ליגת העל</h1>
+    <h1 class="header__title w-33">וורדעל כדורגלני ליגת העל</h1>
 </div>

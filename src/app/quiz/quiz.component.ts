@@ -1,5 +1,4 @@
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {MAX_GUESSES_ALLOWED, MAX_LETTERS_ALLOWED} from 'src/app/shared/consts/rules';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {GuessesService} from 'src/app/shared/services/guesses.service';
 import {Subscription} from 'rxjs';
 import {Key} from 'src/app/shared/models/guess.model';

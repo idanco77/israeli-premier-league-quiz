@@ -1,5 +1,5 @@
 <div class="quiz" *ngFor="let guess of guesses; let word = index">
-    <div class="cell" *ngFor="let letterData of guess; let letter = index"
+    <div class="quiz__cell" *ngFor="let letterData of guess; let letter = index"
          [ngClass]="{
        green: guesses[word][letter].isGreen,
        yellow: guesses[word][letter].isYellow,

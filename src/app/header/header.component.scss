@@ -13,14 +13,14 @@
     text-align: center;
     justify-content: center;
   }
-}
 
-.header-title {
-  text-align: center;
-  margin: 0;
-  font-size: 2.5rem;
-}
+  &__user-level {
+    font-size: 1.6rem;
+  }
 
-.user-level {
-  font-size: 1.6rem;
+  &__title {
+    text-align: center;
+    margin: 0;
+    font-size: 2.5rem;
+  }
 }

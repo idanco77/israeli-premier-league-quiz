@@ -3,16 +3,16 @@
 .keyboard {
   display: flex;
   justify-content: center;
-}
 
-.key {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 7rem;
-  height: 7rem;
-  cursor: pointer;
-  background-color: $light-gray;
-  margin: 0.3rem;
-  font-size: 2.5rem;
+  &__key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 7rem;
+    height: 7rem;
+    cursor: pointer;
+    background-color: $light-gray;
+    margin: 0.3rem;
+    font-size: 2.5rem;
+  }
 }
