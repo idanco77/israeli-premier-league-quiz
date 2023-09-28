@@ -9,7 +9,7 @@
 
   @include respond(phone) {
     flex-direction: column;
-    height: 7rem;
+    height: 10rem;
     text-align: center;
     justify-content: center;
   }

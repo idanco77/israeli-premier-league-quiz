@@ -22,6 +22,10 @@ import {PlayersDataService} from 'src/app/shared/services/players-data.service';
 import {QuizComponent} from 'src/app/quiz/quiz.component';
 import {GuessesService} from 'src/app/shared/services/guesses.service';
 import {KeyboardComponent} from 'src/app/keyboard/keyboard.component';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 firebase.initializeApp(environment.firebase);
 
@@ -44,6 +48,10 @@ firebase.initializeApp(environment.firebase);
     MatSlideToggleModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    FontAwesomeModule,
+    MatTooltipModule,
   ],
   providers: [
     UserTrackingService,

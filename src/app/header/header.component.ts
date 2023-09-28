@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl} from '@angular/forms';
+import { faRefresh } from '@fortawesome/free-solid-svg-icons';
 import {UserLevelService} from 'src/app/shared/services/user-level.service';
 
 @Component({
@@ -9,6 +10,7 @@ import {UserLevelService} from 'src/app/shared/services/user-level.service';
 })
 export class HeaderComponent implements OnInit {
     userLevel: FormControl<string | null> = new FormControl('');
+    faRefresh = faRefresh;
 
     constructor(private userLevelService: UserLevelService) {
 
@@ -18,5 +20,10 @@ export class HeaderComponent implements OnInit {
         this.userLevel.valueChanges.subscribe((val: string | null): void => {
             this.userLevelService.isBeginner.next(!!val);
         });
+    }
+
+    resetGame() {
+        localStorage.clear();
+        window.location.reload();
     }
 }
