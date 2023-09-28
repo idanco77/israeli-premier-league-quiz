@@ -1,4 +1,5 @@
 import {Component, OnInit} from '@angular/core';
+import {refreshAfter1Hour} from 'src/app/shared/consts/is-refresh.const';
 declare const swal: any;
 
 
@@ -12,6 +13,11 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    refreshAfter1Hour();
+    const isWin = JSON.parse(localStorage.getItem('isWin') || '[]');
+    if (isWin) {
+      return;
+    }
     swal.fire({
       title: '<strong>ברוכים הבאים!</strong>',
       icon: 'info',

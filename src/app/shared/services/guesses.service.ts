@@ -6,11 +6,18 @@ import {MAX_GUESSES_ALLOWED, MAX_LETTERS_ALLOWED} from 'src/app/shared/consts/ru
     providedIn: 'root'
 })
 export class GuessesService {
-    guessesSub = new BehaviorSubject<Key[][]>(Array.from({length: MAX_GUESSES_ALLOWED}, () =>
-        Array.from({length: MAX_LETTERS_ALLOWED}, () => ({
-            isGreen: false,
-            isYellow: false,
-            isGray: false,
-            letter: ''
-        }))));
+    guessesSub = new BehaviorSubject<Key[][]>(this.getGuesses());
+
+    private getGuesses() {
+        if (localStorage.getItem('guesses') && localStorage.getItem('keyboardKeys')) {
+            return (JSON.parse(localStorage.getItem('guesses') || '[]'));
+        }
+        return Array.from({length: MAX_GUESSES_ALLOWED}, () =>
+            Array.from({length: MAX_LETTERS_ALLOWED}, () => ({
+                isGreen: false,
+                isYellow: false,
+                isGray: false,
+                letter: ''
+            })))
+    }
 }
