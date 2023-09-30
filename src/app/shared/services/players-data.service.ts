@@ -11,16 +11,8 @@ import * as playersDetailsJSON from 'src/assets/players-details.json';
 export class PlayersDataService {
     autocompleteAvailableWordsSub = new Subject<string[]>();
 
-    getPlayersData(): PlayerDetail[] {
-        const playersDetails: PlayerDetail[] = [];
+    getPlayersData(): any {
 
-        for (const prop in playersDetailsJSON) {
-            if (isNaN(Number(prop))) {
-                continue;
-            }
-            playersDetails.push(playersDetailsJSON[prop] as PlayerDetail)
-        }
-        return playersDetails;
 
         /* API Call - original data. can update the json file if we want */
 

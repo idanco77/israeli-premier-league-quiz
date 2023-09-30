@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {FormControl} from '@angular/forms';
 import { faRefresh } from '@fortawesome/free-solid-svg-icons';
 import {UserLevelService} from 'src/app/shared/services/user-level.service';
@@ -11,6 +11,7 @@ import {UserLevelService} from 'src/app/shared/services/user-level.service';
 export class HeaderComponent implements OnInit {
     userLevel: FormControl<string | null> = new FormControl('');
     faRefresh = faRefresh;
+    @Input() gameTitle: string;
 
     constructor(private userLevelService: UserLevelService) {
 

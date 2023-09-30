@@ -1,4 +1,4 @@
-import {Component, HostListener, OnDestroy, OnInit} from '@angular/core';
+import {Component, HostListener, Input, OnDestroy, OnInit} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {UserLevelService} from 'src/app/shared/services/user-level.service';
 import {Key} from 'src/app/shared/models/guess.model';
@@ -17,16 +17,17 @@ import {
     THIRD_KEYBOARD_ROW
 } from 'src/app/shared/consts/keyboard.const';
 import {Color} from 'src/app/shared/types/colors.type';
-import {PlayersDataService} from 'src/app/shared/services/players-data.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
-import {ResultsDialogComponent} from 'src/app/results-dialog/results-dialog.component';
+import {ResultsDialogComponent} from 'src/app/shared/components/results-dialog/results-dialog.component';
 import {AutocompleteService} from 'src/app/shared/services/autocomplete.service';
 import {MatDialog} from '@angular/material/dialog';
 import {keyMapper} from 'src/app/shared/consts/key-mapper.const';
 import {DELETE, ENTER} from 'src/app/shared/consts/key-names.const';
-import {mapPlayerDetails} from 'src/app/shared/consts/israeli-premier-league/player-detail-mapper.const';
-import {refreshAfter1Hour} from 'src/app/shared/consts/is-refresh.const';
+import {Game} from 'src/app/shared/types/games.type';
+import {refreshAfter1Hour} from 'src/app/shared/consts/refresh-after-1-hour.const';
+import {getDetails} from 'src/app/shared/consts/get-details.const';
+import {getAvailableWords} from 'src/app/shared/consts/get-available-words.const';
 
 @Component({
     selector: 'app-keyboard',
@@ -38,6 +39,8 @@ export class KeyboardComponent implements OnInit, OnDestroy {
     readonly secondKeyboardRow = SECOND_KEYBOARD_ROW;
     readonly thirdKeyboardRow = THIRD_KEYBOARD_ROW;
 
+    @Input() game: Game;
+
     isBeginnerSub: Subscription;
     guessesSub: Subscription;
     autocompleteValueSub: Subscription;
@@ -45,7 +48,7 @@ export class KeyboardComponent implements OnInit, OnDestroy {
     isBeginner: boolean;
     keyboardKeys: Key[][] = [];
 
-    details: PlayerDetail[] = [];
+    details: PlayerDetail[] | string[] = [];
     availableWords: string[] = [];
     chosenWord: string[] = [];
 
@@ -63,16 +66,13 @@ export class KeyboardComponent implements OnInit, OnDestroy {
 
     constructor(private userLevel: UserLevelService,
                 private guessesService: GuessesService,
-                private playersDataService: PlayersDataService,
                 private snackBar: MatSnackBar, private dialog: MatDialog,
                 private autocompleteService: AutocompleteService) {
     }
 
     ngOnInit() {
-        this.details = this.playersDataService.getPlayersData();
-        this.availableWords = mapPlayerDetails([
-            ...this.details.map((player: PlayerDetail) => player.lastName)]
-        );
+        this.details = getDetails(this.game);
+        this.availableWords = getAvailableWords(this.game, this.details);
         this.setChosenWord();
 
         this.guessesSub = this.guessesService.guessesSub.subscribe((guesses: Key[][]) => {
@@ -107,8 +107,8 @@ export class KeyboardComponent implements OnInit, OnDestroy {
     }
 
     private initKeyboardKeys(): void {
-        if (localStorage.getItem('keyboardKeys') && localStorage.getItem('guesses')) {
-            this.keyboardKeys = JSON.parse(localStorage.getItem('keyboardKeys') || '[]');
+        if (localStorage.getItem(this.game + 'KeyboardKeys') && localStorage.getItem(this.game + 'Guesses')) {
+            this.keyboardKeys = JSON.parse(localStorage.getItem(this.game + 'KeyboardKeys') || '[]');
             return;
         }
         this.keyboardKeys = KEYBOARD.map((keyboardRow: string[]) =>
@@ -165,18 +165,22 @@ export class KeyboardComponent implements OnInit, OnDestroy {
         this.chosenWord = [... this.cachedChosenWord];
         const guessLetters: string[] = guess.map((letterData: Key) => letterData.letter);
 
-        if (OPTIONAL_TERMINAL_LETTERS_CODES.includes(guessLetters[LAST_LETTER].charCodeAt(0) + 1)) {
-            guessLetters[LAST_LETTER] = String.fromCharCode(
-                guessLetters[LAST_LETTER].charCodeAt(0) + 1
-            );
-        }
-
         if (! this.availableWords.includes(guessLetters.join(''))) {
-            this.snackBar.open('השחקן לא נמצא ברשימת השחקנים', 'X', {
+            const message = {
+                israeliPremierLeague: 'השחקן',
+                cities: 'היישוב',
+            }
+            this.snackBar.open(message[this.game] + ' לא נמצא ברשימה', 'X', {
                 duration: 1000,
                 verticalPosition: 'top'
             });
             return;
+        }
+
+        if (OPTIONAL_TERMINAL_LETTERS_CODES.includes(guessLetters[LAST_LETTER].charCodeAt(0) + 1)) {
+            guessLetters[LAST_LETTER] = String.fromCharCode(
+                guessLetters[LAST_LETTER].charCodeAt(0) + 1
+            );
         }
 
         const letterColors: Color[] = [];
@@ -222,28 +226,31 @@ export class KeyboardComponent implements OnInit, OnDestroy {
     }
 
     private setChosenWord(): void {
-        if (localStorage.getItem('chosenWord')) {
-            this.chosenWord = JSON.parse(localStorage.getItem('chosenWord') || '[]');
+        if (localStorage.getItem(this.game + 'ChosenWord')) {
+            this.chosenWord = JSON.parse(localStorage.getItem(this.game + 'ChosenWord') || '[]');
             this.cachedChosenWord = [...this.chosenWord];
             return;
         }
         // Select a random word
         const randomIndex: number = Math.floor(Math.random() * this.availableWords.length);
         const selectedWord: string = this.availableWords[randomIndex];
-
         // Split the word into an array and create a cached copy
         this.chosenWord = selectedWord.split('');
+        const utf16code = this.chosenWord[4].charCodeAt(0) + 1;
+        if (OPTIONAL_TERMINAL_LETTERS_CODES.includes(utf16code)) {
+            this.chosenWord[this.chosenWord.length - 1] = String.fromCharCode(utf16code);
+        }
         this.cachedChosenWord = [...this.chosenWord];
-        localStorage.setItem('chosenWord', JSON.stringify(this.chosenWord));
-        localStorage.setItem('chosenWordTimestamp', JSON.stringify(Math.floor(Date.now() / 1000)));
-        refreshAfter1Hour();
+        localStorage.setItem(this.game + 'ChosenWord', JSON.stringify(this.chosenWord));
+        localStorage.setItem(this.game + 'ChosenWordTimestamp', JSON.stringify(Math.floor(Date.now() / 1000)));
+        refreshAfter1Hour(this.game);
     }
 
     private applyLettersColor(color: Color, index: number, guess: Key[]): void {
         setTimeout(() => {
             guess[index][color] = true;
             this.guessesService.guessesSub.next(this.guesses);
-            localStorage.setItem('guesses', JSON.stringify(this.guesses));
+            localStorage.setItem(this.game + 'Guesses', JSON.stringify(this.guesses));
             const letter = guess[index].regularLetter;
             const rows: Key[][] = [
                 this.keyboardKeys[FIRST_KEYBOARD_ROW],
@@ -255,7 +262,7 @@ export class KeyboardComponent implements OnInit, OnDestroy {
                 const key: Key | undefined = row.find(key => key.letter === letter);
                 this.handleColors(key, color);
             });
-            localStorage.setItem('keyboardKeys', JSON.stringify(this.keyboardKeys));
+            localStorage.setItem(this.game + 'KeyboardKeys', JSON.stringify(this.keyboardKeys));
         }, index * 500)
     }
 
@@ -281,8 +288,8 @@ export class KeyboardComponent implements OnInit, OnDestroy {
         const isEveryColorGreen = letterColors.every((color: Color): boolean => color === 'isGreen');
         if (isEveryColorGreen) {
             this.isWin = true;
-            localStorage.setItem('isWin', JSON.stringify(true));
-            refreshAfter1Hour();
+            localStorage.setItem(this.game + 'IsWin', JSON.stringify(true));
+            refreshAfter1Hour(this.game);
             this.openResultsDialog('כל הכבוד! ניצחת!');
         } else if (this.currentGuess === MAX_GUESSES_ALLOWED) {
             this.openResultsDialog('לא הצלחת. לא נורא נסה פעם הבאה');
@@ -328,12 +335,20 @@ export class KeyboardComponent implements OnInit, OnDestroy {
     }
 
     private openResultsDialog(message: string) {
-        const playerDetails = this.details.find((playerDetail: PlayerDetail): boolean =>
-            playerDetail.lastName === this.cachedChosenWord.join('')
-        ) as PlayerDetail;
+        const resultData = this.game === 'israeliPremierLeague'
+            ? (this.details as PlayerDetail[]).find((playerDetail: PlayerDetail): boolean =>
+                playerDetail.lastName === this.cachedChosenWord.join('')
+            ) as PlayerDetail
+            :
+            this.cachedChosenWord
+        ;
         setTimeout(() => {
             this.dialog.open(ResultsDialogComponent, {
-                data: {playerDetails, message: message}
+                data: {
+                    game: this.game,
+                    resultData: resultData,
+                    message: message
+                }
             });
         }, 3000);
 

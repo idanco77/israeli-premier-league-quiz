@@ -1,11 +1,16 @@
 <span mat-dialog-close class="m-3">X</span>
 <div class="px-5 d-flex justify-content-center flex-column align-items-center">
   <h1 class="text-center mt-2 result-dialog-message">{{ data.message }}</h1>
-  <div class="result-dialog-details" *ngIf="data.playerDetails.name">שם השחקן: {{ data.playerDetails.name }}</div>
-  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.age">גיל השחקן: {{ data.playerDetails.age }}</div>
-  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.team">קבוצה: {{ data.playerDetails.team }}</div>
-  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.position">תפקיד: {{ data.playerDetails.position }}</div>
-  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.shirtNumber">מספר חולצה: {{ data.playerDetails.shirtNumber }}</div>
-  <div class="result-dialog-details mt-2" *ngIf="data.playerDetails.coachName">מאמן: {{ data.playerDetails.coachName }}</div>
-  <img class="logo-image" *ngIf="data.playerDetails.teamLogo" [src]="data.playerDetails.teamLogo" [alt]="data.playerDetails.name">
+  <div class="result-dialog-details" *ngIf="data.game === 'israeliPremierLeague' && data.resultData.name">שם השחקן: {{ data.resultData.name }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.game === 'israeliPremierLeague' && data.resultData.age">גיל השחקן: {{ data.resultData.age }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.game === 'israeliPremierLeague' && data.resultData.team">קבוצה: {{ data.resultData.team }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.game === 'israeliPremierLeague' && data.resultData.position">תפקיד: {{ data.resultData.position }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.game === 'israeliPremierLeague' && data.resultData.shirtNumber">מספר חולצה: {{ data.resultData.shirtNumber }}</div>
+  <div class="result-dialog-details mt-2" *ngIf="data.game === 'israeliPremierLeague' && data.resultData.coachName">מאמן: {{ data.resultData.coachName }}</div>
+  <img class="logo-image" *ngIf="data.game === 'israeliPremierLeague' && data.resultData.teamLogo" [src]="data.resultData.teamLogo" [alt]="data.resultData.name">
+  <div class="py-4" *ngIf="data.game === 'cities'">
+    <div>שם הישוב: {{ this.data.resultData.join('') }}</div>
+    <a href="https://www.google.com/search?q={{ this.data.resultData.join('') }}" target="_blank">איפה המקום הזה?</a>
+  </div>
 </div>
+

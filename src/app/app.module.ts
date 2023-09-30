@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import {NgModule} from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
@@ -9,25 +9,30 @@ import {MatInputModule} from '@angular/material/input';
 import {ReactiveFormsModule} from '@angular/forms';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
-import {ResultsDialogComponent} from 'src/app/results-dialog/results-dialog.component';
+import {ResultsDialogComponent} from 'src/app/shared/components/results-dialog/results-dialog.component';
 import {MatDialogModule} from '@angular/material/dialog';
 import { ScreenTrackingService,UserTrackingService } from '@angular/fire/analytics';
 import * as firebase from 'firebase/app';
+import * as analytics from 'firebase/analytics';
 import {environment} from 'src/environment/environment';
-import {HeaderComponent} from 'src/app/header/header.component';
+import {HeaderComponent} from 'src/app/shared/components/header/header.component';
 import {UserLevelService} from 'src/app/shared/services/user-level.service';
-import {AutocompleteComponent} from 'src/app/autocomplete/autocomplete.component';
+import {AutocompleteComponent} from 'src/app/shared/components/autocomplete/autocomplete.component';
 import {AutocompleteService} from 'src/app/shared/services/autocomplete.service';
 import {PlayersDataService} from 'src/app/shared/services/players-data.service';
-import {QuizComponent} from 'src/app/quiz/quiz.component';
+import {QuizComponent} from 'src/app/shared/components/quiz/quiz.component';
 import {GuessesService} from 'src/app/shared/services/guesses.service';
-import {KeyboardComponent} from 'src/app/keyboard/keyboard.component';
+import {KeyboardComponent} from 'src/app/shared/components/keyboard/keyboard.component';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {MatTooltipModule} from '@angular/material/tooltip';
+import {IsraeliPremierLeagueComponent} from 'src/app/israeli-premier-league/israeli-premier-league.component';
+import {RouterModule} from '@angular/router';
+import {CitiesComponent} from 'src/app/cities/cities.component';
 
-firebase.initializeApp(environment.firebase);
+const app = firebase.initializeApp(environment.firebase);
+analytics.getAnalytics(app);
 
 @NgModule({
   declarations: [
@@ -36,9 +41,17 @@ firebase.initializeApp(environment.firebase);
     HeaderComponent,
     AutocompleteComponent,
     QuizComponent,
-    KeyboardComponent
+    KeyboardComponent,
+    IsraeliPremierLeagueComponent,
+    CitiesComponent
   ],
   imports: [
+    RouterModule.forRoot([
+      {path: 'israeli-premier-league', component: IsraeliPremierLeagueComponent},
+      {path: 'cities', component: CitiesComponent},
+      {path: '', redirectTo: 'israeli-premier-league', pathMatch: 'full'},
+      {path: '**', redirectTo: 'israeli-premier-league', pathMatch: 'full'}
+    ]),
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,

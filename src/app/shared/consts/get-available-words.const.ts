@@ -1,21 +1,16 @@
 import {Game} from 'src/app/shared/types/games.type';
-import {CITIES} from 'src/app/shared/consts/cities/cities.const';
+import {CITIES, CITIES_TERMINAL_LETTERS} from 'src/app/shared/consts/cities/cities.const';
 import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
 import * as playersDetailsJSON from 'src/assets/players-details.json';
+import {mapPlayerDetails} from 'src/app/shared/consts/israeli-premier-league/player-detail-mapper.const';
 
-export const getDetails = (game: Game) => {
+export const getAvailableWords = (game: Game, details: any): string[] => {
     switch (game) {
         case 'israeliPremierLeague':
-            const playersDetails: PlayerDetail[] = [];
-
-            for (const prop in playersDetailsJSON) {
-                if (isNaN(Number(prop))) {
-                    continue;
-                }
-                playersDetails.push(playersDetailsJSON[prop] as PlayerDetail)
-            }
-            return playersDetails;
+            return mapPlayerDetails([
+                ...details.map((player: PlayerDetail) => player.lastNameTerminalLetters)]
+            )
         case 'cities':
-            return CITIES;
+            return CITIES_TERMINAL_LETTERS;
     }
 };

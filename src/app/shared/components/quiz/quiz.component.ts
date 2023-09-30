@@ -1,7 +1,8 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {GuessesService} from 'src/app/shared/services/guesses.service';
 import {Subscription} from 'rxjs';
 import {Key} from 'src/app/shared/models/guess.model';
+import {Game} from 'src/app/shared/types/games.type';
 
 @Component({
     selector: 'app-quiz',
@@ -11,6 +12,7 @@ import {Key} from 'src/app/shared/models/guess.model';
 export class QuizComponent implements OnInit, OnDestroy {
     guessesSub: Subscription;
     guesses: Key[][];
+    @Input() game: Game;
 
     constructor(private guessesService: GuessesService) {
     }

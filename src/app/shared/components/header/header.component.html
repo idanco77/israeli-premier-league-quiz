@@ -2,7 +2,7 @@
     <form class="w-33" (keydown.enter)="$event.preventDefault()">
         <mat-slide-toggle class="header__user-level" [formControl]="userLevel">{{ userLevel.value ? 'בטל ' : 'הפעל ' }}רמה קלה</mat-slide-toggle>
     </form>
-    <h1 class="header__title w-33">וורדעל כדורגלני ליגת העל</h1>
+    <h1 class="header__title w-33">{{ gameTitle }}</h1>
     <div class="w-33 text-start">
     <button matTooltip="התחל מחדש" mat-icon-button class="refresh-icon-button" (click)="resetGame()">
         <fa-icon class="refresh-icon" [icon]="faRefresh"></fa-icon>

@@ -1,7 +1,7 @@
 <form (keydown.enter)="$event.preventDefault()" class="mt-1 d-flex justify-content-center">
     <mat-form-field class="example-full-width" *ngIf="isBeginner">
-        <mat-label>שם השחקן</mat-label>
-        <input matInput placeholder="בחר שחקן" aria-label="Number"
+        <mat-label>שם {{ game === 'cities' ? ' היישוב' : ' השחקן' }}</mat-label>
+        <input matInput placeholder="בחר {{ game === 'cities' ? ' יישוב' : ' שחקן' }}" aria-label="Number"
                [matAutocomplete]="auto" [formControl]="autocompleteControl">
     </mat-form-field>
 </form>
