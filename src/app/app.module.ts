@@ -30,9 +30,9 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {IsraeliPremierLeagueComponent} from 'src/app/israeli-premier-league/israeli-premier-league.component';
 import {RouterModule} from '@angular/router';
 import {CitiesComponent} from 'src/app/cities/cities.component';
+import {NgxGoogleAnalyticsModule, NgxGoogleAnalyticsRouterModule} from 'ngx-google-analytics';
 
-const app = firebase.initializeApp(environment.firebase);
-analytics.getAnalytics(app);
+firebase.initializeApp(environment.firebase);
 
 @NgModule({
   declarations: [
@@ -52,6 +52,8 @@ analytics.getAnalytics(app);
       {path: '', redirectTo: 'israeli-premier-league', pathMatch: 'full'},
       {path: '**', redirectTo: 'israeli-premier-league', pathMatch: 'full'}
     ]),
+    NgxGoogleAnalyticsModule.forRoot('G-EFLX8HF3QL'),
+    NgxGoogleAnalyticsRouterModule,
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,
