@@ -5,7 +5,7 @@ import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
 import {FormControl} from '@angular/forms';
 import {PlayersDataService} from 'src/app/shared/services/players-data.service';
 import {AutocompleteService} from 'src/app/shared/services/autocomplete.service';
-import {mapPlayerDetails} from 'src/app/shared/consts/player-detail-mapper.const';
+import {mapPlayerDetails} from 'src/app/shared/consts/israeli-premier-league/player-detail-mapper.const';
 import {PlayerDetail} from 'src/app/shared/models/player-detail.model';
 
 @Component({

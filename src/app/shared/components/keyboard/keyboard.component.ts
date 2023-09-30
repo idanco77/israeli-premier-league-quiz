@@ -25,7 +25,7 @@ import {AutocompleteService} from 'src/app/shared/services/autocomplete.service'
 import {MatDialog} from '@angular/material/dialog';
 import {keyMapper} from 'src/app/shared/consts/key-mapper.const';
 import {DELETE, ENTER} from 'src/app/shared/consts/key-names.const';
-import {mapPlayerDetails} from 'src/app/shared/consts/player-detail-mapper.const';
+import {mapPlayerDetails} from 'src/app/shared/consts/israeli-premier-league/player-detail-mapper.const';
 import {refreshAfter1Hour} from 'src/app/shared/consts/is-refresh.const';
 
 @Component({
