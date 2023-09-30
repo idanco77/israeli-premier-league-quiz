@@ -1,14 +1,5 @@
 {
   "projects": {
-    "default": "israeli-premier-league-quiz"
-  },
-  "targets": {
-    "israeli-premier-league-quiz": {
-      "hosting": {
-        "israeli-premier-league-quizz": [
-          "israeli-premier-league-quiz"
-        ]
-      }
-    }
+    "default": "wordle-israel"
   }
 }
