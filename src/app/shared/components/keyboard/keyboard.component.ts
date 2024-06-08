@@ -70,9 +70,6 @@ export class KeyboardComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-      const date = localStorage.getItem('date');
-      console.log(date);
-      console.log(this.getCurrentDateInUTC());
       this.details = getDetails(this.game);
       this.availableWords = getAvailableWords(this.game, this.details);
       this.setChosenWord();
