@@ -48,7 +48,9 @@ export class AutocompleteComponent implements OnInit, OnDestroy {
             startWith(''),
             map(value => this.autocompleteAvailableWords.filter(
                 option => option.includes(value || '')
-            )),
+              )
+              .slice(0, 10)
+            ),
         );
     }
 
