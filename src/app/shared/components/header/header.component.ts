@@ -22,9 +22,4 @@ export class HeaderComponent implements OnInit {
             this.userLevelService.isBeginner.next(!!val);
         });
     }
-
-    resetGame() {
-        localStorage.clear();
-        window.location.reload();
-    }
 }
