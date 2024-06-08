@@ -10,7 +10,7 @@
   <img class="logo-image" *ngIf="data.game === 'israeliPremierLeague' && data.resultData.teamLogo" [src]="data.resultData.teamLogo" [alt]="data.resultData.name">
   <div class="py-4" *ngIf="data.game === 'cities'">
     <div>שם הישוב: {{ this.data.resultData.join('') }}</div>
-    <a href="https://www.google.com/search?q={{ this.data.resultData.join('') }}" target="_blank">איפה המקום הזה?</a>
+    <a href="https://www.google.com/search?q={{ this.data.resultData.join('') + ' יישוב ' }}" target="_blank">איפה המקום הזה?</a>
   </div>
 </div>
 

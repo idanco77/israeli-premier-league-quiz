@@ -25,7 +25,6 @@ import {MatDialog} from '@angular/material/dialog';
 import {keyMapper} from 'src/app/shared/consts/key-mapper.const';
 import {DELETE, ENTER} from 'src/app/shared/consts/key-names.const';
 import {Game} from 'src/app/shared/types/games.type';
-import {refreshAfter1Hour} from 'src/app/shared/consts/refresh-after-1-hour.const';
 import {getDetails} from 'src/app/shared/consts/get-details.const';
 import {getAvailableWords} from 'src/app/shared/consts/get-available-words.const';
 
@@ -71,26 +70,29 @@ export class KeyboardComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.details = getDetails(this.game);
-        this.availableWords = getAvailableWords(this.game, this.details);
-        this.setChosenWord();
+      const date = localStorage.getItem('date');
+      console.log(date);
+      console.log(this.getCurrentDateInUTC());
+      this.details = getDetails(this.game);
+      this.availableWords = getAvailableWords(this.game, this.details);
+      this.setChosenWord();
 
-        this.guessesSub = this.guessesService.guessesSub.subscribe((guesses: Key[][]) => {
-            this.guesses = guesses;
-        });
+      this.guessesSub = this.guessesService.guessesSub.subscribe((guesses: Key[][]) => {
+        this.guesses = guesses;
+      });
 
-        this.isBeginnerSub = this.userLevel.isBeginner.subscribe((isBeginner: boolean) => {
-            this.isBeginner = isBeginner;
-        });
+      this.isBeginnerSub = this.userLevel.isBeginner.subscribe((isBeginner: boolean) => {
+        this.isBeginner = isBeginner;
+      });
 
-        this.autocompleteValueSub = this.autocompleteService.autocompleteOutput.subscribe((autocompleteValue: string[]) => {
-            this.handleSelection(autocompleteValue);
-        });
+      this.autocompleteValueSub = this.autocompleteService.autocompleteOutput.subscribe((autocompleteValue: string[]) => {
+        this.handleSelection(autocompleteValue);
+      });
 
-        this.currentGuess = this.findCurrentGuessIndex();
+      this.currentGuess = this.findCurrentGuessIndex();
 
-        this.initKeyboardKeys();
-        this.checkIsWin();
+      this.initKeyboardKeys();
+      this.checkIsWin();
     }
 
     deleteLetter(): void {
@@ -153,7 +155,8 @@ export class KeyboardComponent implements OnInit, OnDestroy {
     }
 
     checkWord(): void {
-        if (this.currentGuess >= MAX_GUESSES_ALLOWED) {
+      localStorage.setItem('date', this.getCurrentDateInUTC());
+      if (this.currentGuess >= MAX_GUESSES_ALLOWED) {
             return;
         }
 
@@ -231,9 +234,8 @@ export class KeyboardComponent implements OnInit, OnDestroy {
             this.cachedChosenWord = [...this.chosenWord];
             return;
         }
-        // Select a random word
-        const randomIndex: number = Math.floor(Math.random() * this.availableWords.length);
-        const selectedWord: string = this.availableWords[randomIndex];
+
+      const selectedWord = this.availableWords[this.getDifferenceInDays((new Date('2024-06-07')), new Date(new Date()))];
         // Split the word into an array and create a cached copy
         this.chosenWord = selectedWord.split('');
         const utf16code = this.chosenWord[4].charCodeAt(0) + 1;
@@ -243,7 +245,7 @@ export class KeyboardComponent implements OnInit, OnDestroy {
         this.cachedChosenWord = [...this.chosenWord];
         localStorage.setItem(this.game + 'ChosenWord', JSON.stringify(this.chosenWord));
         localStorage.setItem(this.game + 'ChosenWordTimestamp', JSON.stringify(Math.floor(Date.now() / 1000)));
-        refreshAfter1Hour(this.game);
+
     }
 
     private applyLettersColor(color: Color, index: number, guess: Key[]): void {
@@ -286,14 +288,13 @@ export class KeyboardComponent implements OnInit, OnDestroy {
 
     private checkResults(letterColors: Color[]): void {
         const isEveryColorGreen = letterColors.every((color: Color): boolean => color === 'isGreen');
-        if (isEveryColorGreen) {
-            this.isWin = true;
-            localStorage.setItem(this.game + 'IsWin', JSON.stringify(true));
-            refreshAfter1Hour(this.game);
-            this.openResultsDialog('כל הכבוד! ניצחת!');
-        } else if (this.currentGuess === MAX_GUESSES_ALLOWED) {
-            this.openResultsDialog('לא הצלחת. לא נורא נסה פעם הבאה');
-        }
+      if (isEveryColorGreen) {
+        this.isWin = true;
+        localStorage.setItem(this.game + 'IsWin', JSON.stringify(true));
+        this.openResultsDialog('כל הכבוד! ניצחת!');
+      } else if (this.currentGuess === MAX_GUESSES_ALLOWED) {
+        this.openResultsDialog('לא הצלחת. לא נורא נסה פעם הבאה');
+      }
 
     }
 
@@ -379,4 +380,18 @@ export class KeyboardComponent implements OnInit, OnDestroy {
             return guess[0].letter === '';
         });;
     }
+
+  getDifferenceInDays(firstDate: Date, today: Date) {
+    const num  = new Date(today).setHours(0, 0, 0, 0) - firstDate.setHours(0, 0, 0, 0);
+    return Math.round(num / 864e5);
+  }
+
+  private getCurrentDateInUTC(): string {
+    const currentDate = new Date();
+    const offsetInMinutes = currentDate.getTimezoneOffset();
+    const utcDate = new Date(currentDate.getTime() - offsetInMinutes * 60 * 1000);
+
+    return utcDate.toISOString().split('T')[0];
+  }
+
 }
