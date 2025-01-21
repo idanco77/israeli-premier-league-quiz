@@ -232,7 +232,8 @@ export class KeyboardComponent implements OnInit, OnDestroy {
             return;
         }
 
-      const selectedWord = this.availableWords[this.getDifferenceInDays((new Date('2024-06-07')), new Date(new Date()))];
+        const dayPassed = this.getDifferenceInDays((new Date('2024-06-07')), new Date(new Date()));
+      const selectedWord = this.availableWords[dayPassed % this.availableWords.length];
         // Split the word into an array and create a cached copy
         this.chosenWord = selectedWord.split('');
         const utf16code = this.chosenWord[4].charCodeAt(0) + 1;
