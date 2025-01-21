@@ -14,7 +14,6 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     const date = localStorage.getItem('date');
     if (date === null || date !== this.getCurrentDateInUTC()) {
-      console.log(1);
       this.clearDailyData();
     }
   }
